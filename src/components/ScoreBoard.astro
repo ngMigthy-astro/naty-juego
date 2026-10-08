@@ -108,6 +108,13 @@ import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucid
         >
           Naty
         </span>
+        <span
+          id="cups-count-p1"
+          class="hidden text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 px-1 py-0.2 rounded-full ml-1 shrink-0 select-none"
+          title="Copas de torneo ganadas"
+        >
+          🏆 0
+        </span>
       </div>
       <div class="flex items-center gap-0.5 sm:gap-1 shrink-0">
         <button
@@ -156,6 +163,13 @@ import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucid
           class="text-xs sm:text-sm font-black text-amber-700 dark:text-amber-400 truncate"
         >
           César
+        </span>
+        <span
+          id="cups-count-p2"
+          class="hidden text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 px-1 py-0.2 rounded-full ml-1 shrink-0 select-none"
+          title="Copas de torneo ganadas"
+        >
+          🏆 0
         </span>
       </div>
       <div class="flex items-center gap-0.5 sm:gap-1 shrink-0">
@@ -305,8 +319,12 @@ import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucid
   interface ScoreState {
     p1Name: string;
     p2Name: string;
-    p1Score: number;
-    p2Score: number;
+    infiniteP1Score: number;
+    infiniteP2Score: number;
+    tournamentP1Score: number;
+    tournamentP2Score: number;
+    p1Cups: number;
+    p2Cups: number;
     mode: GameMode;
   }
 
@@ -318,13 +336,27 @@ import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucid
         return {
           p1Name: parsed.p1Name || "Naty",
           p2Name: parsed.p2Name || "César",
-          p1Score: Number(parsed.p1Score) || 0,
-          p2Score: Number(parsed.p2Score) || 0,
+          infiniteP1Score: Number(parsed.infiniteP1Score ?? parsed.p1Score) || 0,
+          infiniteP2Score: Number(parsed.infiniteP2Score ?? parsed.p2Score) || 0,
+          tournamentP1Score: Number(parsed.tournamentP1Score) || 0,
+          tournamentP2Score: Number(parsed.tournamentP2Score) || 0,
+          p1Cups: Number(parsed.p1Cups) || 0,
+          p2Cups: Number(parsed.p2Cups) || 0,
           mode: parsed.mode || "free",
         };
       }
     } catch {}
-    return { p1Name: "Naty", p2Name: "César", p1Score: 0, p2Score: 0, mode: "free" };
+    return {
+      p1Name: "Naty",
+      p2Name: "César",
+      infiniteP1Score: 0,
+      infiniteP2Score: 0,
+      tournamentP1Score: 0,
+      tournamentP2Score: 0,
+      p1Cups: 0,
+      p2Cups: 0,
+      mode: "free",
+    };
   }
 
   let state = getStoredState();
@@ -336,6 +368,8 @@ import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucid
   const scoreP2 = document.getElementById("score-p2")!;
   const crownP1 = document.getElementById("crown-p1")!;
   const crownP2 = document.getElementById("crown-p2")!;
+  const cupsCountP1 = document.getElementById("cups-count-p1")!;
+  const cupsCountP2 = document.getElementById("cups-count-p2")!;
   const btnPlusP1 = document.getElementById("btn-plus-p1")!;
   const btnMinusP1 = document.getElementById("btn-minus-p1")!;
   const btnPlusP2 = document.getElementById("btn-plus-p2")!;
@@ -367,11 +401,54 @@ import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucid
   const presetNatyCesar = document.getElementById("preset-naty-cesar")!;
   const presetClaudiaRodri = document.getElementById("preset-claudia-rodri")!;
 
+  function getActiveScores(): { p1: number; p2: number } {
+    if (state.mode === "free") {
+      return { p1: state.infiniteP1Score, p2: state.infiniteP2Score };
+    }
+    return { p1: state.tournamentP1Score, p2: state.tournamentP2Score };
+  }
+
+  function addPoint(player: 1 | 2, points: number = 1) {
+    if (state.mode === "free") {
+      if (player === 1) state.infiniteP1Score += points;
+      else state.infiniteP2Score += points;
+    } else {
+      if (player === 1) state.tournamentP1Score += points;
+      else state.tournamentP2Score += points;
+    }
+  }
+
+  function subtractPoint(player: 1 | 2) {
+    if (state.mode === "free") {
+      if (player === 1) state.infiniteP1Score = Math.max(0, state.infiniteP1Score - 1);
+      else state.infiniteP2Score = Math.max(0, state.infiniteP2Score - 1);
+    } else {
+      if (player === 1) state.tournamentP1Score = Math.max(0, state.tournamentP1Score - 1);
+      else state.tournamentP2Score = Math.max(0, state.tournamentP2Score - 1);
+    }
+  }
+
+  function resetCurrentModeScores() {
+    if (state.mode === "free") {
+      state.infiniteP1Score = 0;
+      state.infiniteP2Score = 0;
+    } else {
+      state.tournamentP1Score = 0;
+      state.tournamentP2Score = 0;
+      hasCrownedInThisMatch = false;
+    }
+  }
+
   function syncUI() {
+    // Comprobar campeón si estamos en modo copa (5 o 10 puntos)
+    checkChampion();
+
     displayNameP1.textContent = state.p1Name;
     displayNameP2.textContent = state.p2Name;
-    scoreP1.textContent = state.p1Score.toString();
-    scoreP2.textContent = state.p2Score.toString();
+
+    const scores = getActiveScores();
+    scoreP1.textContent = scores.p1.toString();
+    scoreP2.textContent = scores.p2.toString();
 
     // Actualizar botones de modo
     const inactiveBtnClass =
@@ -392,11 +469,11 @@ import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucid
         "px-2.5 py-0.5 rounded-lg text-[10px] font-black bg-amber-500 text-white border-amber-600 shadow-xs cursor-pointer";
     }
 
-    // Coronas dinámicas para quien va ganando
-    if (state.p1Score > state.p2Score && state.p1Score > 0) {
+    // Coronas dinámicas para quien va ganando en el modo activo
+    if (scores.p1 > scores.p2 && scores.p1 > 0) {
       crownP1.classList.remove("hidden");
       crownP2.classList.add("hidden");
-    } else if (state.p2Score > state.p1Score && state.p2Score > 0) {
+    } else if (scores.p2 > scores.p1 && scores.p2 > 0) {
       crownP2.classList.remove("hidden");
       crownP1.classList.add("hidden");
     } else {
@@ -404,13 +481,35 @@ import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucid
       crownP2.classList.add("hidden");
     }
 
+    // Badges de copas ganadas
+    if (state.p1Cups > 0) {
+      cupsCountP1.textContent = `🏆 ${state.p1Cups}`;
+      cupsCountP1.classList.remove("hidden");
+    } else {
+      cupsCountP1.classList.add("hidden");
+    }
+
+    if (state.p2Cups > 0) {
+      cupsCountP2.textContent = `🏆 ${state.p2Cups}`;
+      cupsCountP2.classList.remove("hidden");
+    } else {
+      cupsCountP2.classList.add("hidden");
+    }
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     window.dispatchEvent(
-      new CustomEvent("game:players-updated", { detail: state }),
+      new CustomEvent("game:players-updated", {
+        detail: {
+          p1Name: state.p1Name,
+          p2Name: state.p2Name,
+          p1Score: scores.p1,
+          p2Score: scores.p2,
+          mode: state.mode,
+          p1Cups: state.p1Cups,
+          p2Cups: state.p2Cups,
+        },
+      }),
     );
-
-    // Solo comprobar campeón si estamos en modo copa (5 o 10 puntos)
-    checkChampion();
   }
 
   function checkChampion() {
@@ -418,19 +517,28 @@ import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucid
     if (state.mode === "free") return; // En modo libre, puntos infinitos
 
     const target = state.mode === "champion_5" ? 5 : 10;
+    const scores = getActiveScores();
 
-    if (state.p1Score >= target || state.p2Score >= target) {
+    if (scores.p1 >= target || scores.p2 >= target) {
       hasCrownedInThisMatch = true;
-      const isP1Winner = state.p1Score >= target;
+      const isP1Winner = scores.p1 >= target;
+      if (isP1Winner) state.p1Cups++;
+      else state.p2Cups++;
+
+      // Guardamos la copa recién sumada
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
       window.dispatchEvent(
         new CustomEvent("game:champion-crowned", {
           detail: {
             winnerName: isP1Winner ? state.p1Name : state.p2Name,
             winnerPlayer: isP1Winner ? 1 : 2,
-            p1Score: state.p1Score,
-            p2Score: state.p2Score,
+            p1Score: scores.p1,
+            p2Score: scores.p2,
             p1Name: state.p1Name,
             p2Name: state.p2Name,
+            p1Cups: state.p1Cups,
+            p2Cups: state.p2Cups,
             target,
           },
         }),
@@ -446,6 +554,11 @@ import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucid
   });
 
   btnTarget5.addEventListener("click", () => {
+    // Si entramos a modo copas desde modo infinito, iniciamos el duelo en 0 - 0
+    if (state.mode === "free") {
+      state.tournamentP1Score = 0;
+      state.tournamentP2Score = 0;
+    }
     state.mode = "champion_5";
     sounds.playQuestionTick();
     hasCrownedInThisMatch = false;
@@ -453,6 +566,11 @@ import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucid
   });
 
   btnTarget10.addEventListener("click", () => {
+    // Si entramos a modo copas desde modo infinito, iniciamos el duelo en 0 - 0
+    if (state.mode === "free") {
+      state.tournamentP1Score = 0;
+      state.tournamentP2Score = 0;
+    }
     state.mode = "champion_10";
     sounds.playQuestionTick();
     hasCrownedInThisMatch = false;
@@ -460,33 +578,32 @@ import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucid
   });
 
   btnPlusP1.addEventListener("click", () => {
-    state.p1Score += 1;
+    addPoint(1, 1);
     sounds.playVictory();
     syncUI();
   });
 
   btnMinusP1.addEventListener("click", () => {
-    state.p1Score = Math.max(0, state.p1Score - 1);
+    subtractPoint(1);
     sounds.playQuestionTick();
     syncUI();
   });
 
   btnPlusP2.addEventListener("click", () => {
-    state.p2Score += 1;
+    addPoint(2, 1);
     sounds.playVictory();
     syncUI();
   });
 
   btnMinusP2.addEventListener("click", () => {
-    state.p2Score = Math.max(0, state.p2Score - 1);
+    subtractPoint(2);
     sounds.playQuestionTick();
     syncUI();
   });
 
   btnReset.addEventListener("click", () => {
-    state.p1Score = 0;
-    state.p2Score = 0;
-    hasCrownedInThisMatch = false;
+    resetCurrentModeScores();
+    sounds.playQuestionTick();
     syncUI();
   });
 
@@ -519,8 +636,12 @@ import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucid
     state.p1Name = inputEditP1.value.trim() || "Jugador 1";
     state.p2Name = inputEditP2.value.trim() || "Jugador 2";
     if (checkResetPoints.checked) {
-      state.p1Score = 0;
-      state.p2Score = 0;
+      state.infiniteP1Score = 0;
+      state.infiniteP2Score = 0;
+      state.tournamentP1Score = 0;
+      state.tournamentP2Score = 0;
+      state.p1Cups = 0;
+      state.p2Cups = 0;
       hasCrownedInThisMatch = false;
     }
     syncUI();
@@ -537,14 +658,14 @@ import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucid
 
   window.addEventListener("game:add-point", ((e: CustomEvent) => {
     const points = Number(e.detail?.points) || 1;
-    if (e.detail?.player === 1) state.p1Score += points;
-    if (e.detail?.player === 2) state.p2Score += points;
+    if (e.detail?.player === 1) addPoint(1, points);
+    if (e.detail?.player === 2) addPoint(2, points);
     syncUI();
   }) as EventListener);
 
   window.addEventListener("game:reset-scores", () => {
-    state.p1Score = 0;
-    state.p2Score = 0;
+    state.tournamentP1Score = 0;
+    state.tournamentP2Score = 0;
     hasCrownedInThisMatch = false;
     syncUI();
   });
