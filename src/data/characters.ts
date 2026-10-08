@@ -8,7 +8,7 @@ export interface Character {
 }
 
 export const CHARACTERS: Character[] = [
-  // --- PIXAR (17) ---
+  // --- PIXAR (25) ---
   {
     id: "woody",
     name: "Woody",
@@ -145,8 +145,72 @@ export const CHARACTERS: Character[] = [
     imageUrl:
       "https://static.wikia.nocookie.net/disney/images/3/36/Profile_-_Dory.png",
   },
+  {
+    id: "mr-incredible",
+    name: "Sr. Increíble",
+    movie: "Los Increíbles",
+    studio: "Pixar",
+    imageUrl:
+      "https://static.wikia.nocookie.net/pixar/images/5/51/Incredibles_ver20.jpg",
+  },
+  {
+    id: "elastigirl",
+    name: "Elastigirl",
+    movie: "Los Increíbles",
+    studio: "Pixar",
+    imageUrl:
+      "https://static.wikia.nocookie.net/pixar/images/f/f3/Elastigirl_Transparent.webp",
+  },
+  {
+    id: "russell",
+    name: "Russell",
+    movie: "Up",
+    studio: "Pixar",
+    imageUrl:
+      "https://static.wikia.nocookie.net/pixar/images/9/96/Russell1.png",
+  },
+  {
+    id: "hector",
+    name: "Héctor",
+    movie: "Coco",
+    studio: "Pixar",
+    imageUrl:
+      "https://static.wikia.nocookie.net/pixar/images/1/1e/Coco_Hector_render.png",
+  },
+  {
+    id: "alberto",
+    name: "Alberto",
+    movie: "Luca",
+    studio: "Pixar",
+    imageUrl:
+      "https://static.wikia.nocookie.net/pixar/images/5/5c/Human_Alberto.png",
+  },
+  {
+    id: "bo-peep",
+    name: "Betty (Bo Peep)",
+    movie: "Toy Story",
+    studio: "Pixar",
+    imageUrl:
+      "https://static.wikia.nocookie.net/pixar/images/f/f0/Bo_Peep.png",
+  },
+  {
+    id: "nemo",
+    name: "Nemo",
+    movie: "Buscando a Nemo",
+    studio: "Pixar",
+    imageUrl:
+      "https://static.wikia.nocookie.net/pixar/images/a/aa/Nemo-FN.png",
+  },
+  {
+    id: "dash",
+    name: "Dash",
+    movie: "Los Increíbles",
+    studio: "Pixar",
+    imageUrl:
+      "https://static.wikia.nocookie.net/pixar/images/a/a5/I2_-_Dash.png",
+  },
 
-  // --- DISNEY (17) ---
+  // --- DISNEY (25) ---
   {
     id: "elsa",
     name: "Elsa",
@@ -264,7 +328,8 @@ export const CHARACTERS: Character[] = [
     name: "Ariel",
     movie: "La Sirenita",
     studio: "Disney",
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/7/77/Ariel_disney.png",
+    imageUrl:
+      "https://upload.wikimedia.org/wikipedia/en/7/77/Ariel_disney.png",
   },
   {
     id: "belle",
@@ -281,5 +346,69 @@ export const CHARACTERS: Character[] = [
     studio: "Disney",
     imageUrl:
       "https://static.wikia.nocookie.net/disney/images/d/da/Profile_-_Judy_Hopps.jpeg",
+  },
+  {
+    id: "beast",
+    name: "Bestia",
+    movie: "La Bella y la Bestia",
+    studio: "Disney",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/8/84/Profile_-_Beast.jpeg",
+  },
+  {
+    id: "hercules",
+    name: "Hércules",
+    movie: "Hércules",
+    studio: "Disney",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/7/70/Profile_-_Hercules.jpeg",
+  },
+  {
+    id: "maui",
+    name: "Maui",
+    movie: "Moana",
+    studio: "Disney",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/6/6f/Profile_-_Maui.jpeg",
+  },
+  {
+    id: "tiana",
+    name: "Tiana",
+    movie: "La Princesa y el Sapo",
+    studio: "Disney",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/f/fa/Profile_-_Tiana.jpeg",
+  },
+  {
+    id: "lilo",
+    name: "Lilo",
+    movie: "Lilo & Stitch",
+    studio: "Disney",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/1/1f/Profile_-_Lilo.png",
+  },
+  {
+    id: "nick",
+    name: "Nick Wilde",
+    movie: "Zootopia",
+    studio: "Disney",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/5/50/Profile_-_Nick_Wilde.jpeg",
+  },
+  {
+    id: "tinkerbell",
+    name: "Campanita",
+    movie: "Peter Pan",
+    studio: "Disney",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/7/76/Profile_-_Tinker_Bell.jpeg",
+  },
+  {
+    id: "kuzco",
+    name: "Kuzco",
+    movie: "Las Locuras del Emperador",
+    studio: "Disney",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/f/ff/Profile_-_Kuzco.jpeg",
   },
 ];
