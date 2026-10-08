@@ -1,6 +1,7 @@
 ---
 // src/layouts/Layout.astro
 import "../styles/global.css";
+import Analytics from "@vercel/analytics/astro";
 
 interface Props {
   title?: string;
@@ -17,7 +18,6 @@ const { title = "Adivina Quién · Disney & Pixar ✨" } = Astro.props;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
 
-    <!-- Script anti-FOUC para Dark Mode -->
     <script is:inline>
       const theme =
         localStorage.getItem("juegos_naty_theme") ||
@@ -35,5 +35,6 @@ const { title = "Adivina Quién · Disney & Pixar ✨" } = Astro.props;
     class="min-h-full flex flex-col font-sans bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200"
   >
     <slot />
+    <Analytics />
   </body>
 </html>
