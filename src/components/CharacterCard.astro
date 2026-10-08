@@ -1,0 +1,66 @@
+---
+// src/components/CharacterCard.astro
+import type { Character } from "../data/characters";
+
+interface Props {
+  character: Character;
+}
+
+const { character } = Astro.props;
+---
+
+<button
+  type="button"
+  data-character-card
+  data-id={character.id}
+  data-discarded="false"
+  class="group relative flex flex-col items-center justify-between p-3.5 sm:p-4 rounded-3xl bg-white border-2 border-slate-200/90 hover:border-indigo-400 shadow-sm hover:shadow-md transition-all duration-300 ease-out cursor-pointer select-none text-left w-full h-[240px] sm:h-[270px] overflow-hidden data-[discarded=true]:[transform:perspective(800px)_rotateX(26deg)_scale(0.92)] data-[discarded=true]:grayscale data-[discarded=true]:opacity-35 data-[discarded=true]:border-slate-300 active:scale-95"
+>
+  <!-- Cabecera de la carta -->
+  <div
+    class="w-full flex items-center justify-between gap-1 text-[10px] font-bold"
+  >
+    <span
+      class={`px-2 py-0.5 rounded-full ${character.studio === "Pixar" ? "bg-purple-100 text-purple-700" : "bg-sky-100 text-sky-700"}`}
+    >
+      {character.studio}
+    </span>
+    <span class="text-slate-400 truncate max-w-[110px] font-medium"
+      >{character.movie}</span
+    >
+  </div>
+
+  <!-- Contenedor de Foto Real -->
+  <div
+    class="relative w-full flex-1 my-2 flex items-center justify-center overflow-hidden rounded-2xl bg-slate-50 border border-slate-100 p-1.5"
+  >
+    <img
+      src={character.imageUrl}
+      alt={character.name}
+      loading="lazy"
+      decoding="async"
+      referrerpolicy="no-referrer"
+      class="w-full h-full object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+    />
+  </div>
+
+  <!-- Nombre del personaje -->
+  <div class="w-full text-center">
+    <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate">
+      {character.name}
+    </h3>
+  </div>
+
+  <!-- Sello de Descartado -->
+  <div
+    data-stamp
+    class="absolute inset-0 bg-slate-900/15 backdrop-blur-[1px] hidden items-center justify-center pointer-events-none group-data-[discarded=true]:flex"
+  >
+    <span
+      class="bg-rose-600 text-white font-black text-xs px-3.5 py-1 rounded-full shadow-lg -rotate-12 border-2 border-white tracking-wider"
+    >
+      DESCARTADO ✕
+    </span>
+  </div>
+</button>

@@ -1,0 +1,126 @@
+---
+// src/components/AdivinaQuien.astro
+import ScoreBoard from "./ScoreBoard.astro";
+import RoundControls from "./RoundControls.astro";
+import SecretModal from "./SecretModal.astro";
+import WinControls from "./WinControls.astro";
+---
+
+<div
+  class="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 w-full flex flex-col gap-4 sm:gap-6 overflow-x-clip"
+>
+  <!-- Marcador Responsive -->
+  <ScoreBoard />
+
+  <!-- Controles Responsive -->
+  <RoundControls />
+
+  <!-- Diálogo accesible secreto -->
+  <SecretModal />
+
+  <!-- Tablero dinámico de 12 cartas -->
+  <main class="w-full">
+    <div
+      id="cards-grid"
+      class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-5 min-h-[350px]"
+    >
+      <!-- Cartas inyectadas -->
+    </div>
+  </main>
+
+  <!-- Fin de ronda -->
+  <WinControls />
+</div>
+
+<script>
+  import { sounds } from "../utils/audio";
+  import type { Character } from "../data/characters";
+
+  const grid = document.getElementById("cards-grid")!;
+
+  function renderCard(char: Character): HTMLElement {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.dataset.id = char.id;
+    btn.dataset.discarded = "false";
+    btn.className =
+      "group relative flex flex-col items-center justify-between p-2.5 sm:p-4 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200/90 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-sm hover:shadow-md transition-all duration-300 ease-out cursor-pointer select-none text-left w-full h-[195px] sm:h-[260px] overflow-hidden data-[discarded=true]:[transform:perspective(800px)_rotateX(26deg)_scale(0.92)] data-[discarded=true]:grayscale data-[discarded=true]:opacity-35 data-[discarded=true]:border-slate-300 dark:data-[discarded=true]:border-slate-800 active:scale-95";
+
+    btn.innerHTML = `
+      <!-- Cabecera de la carta -->
+      <div class="w-full flex items-center justify-between gap-1 text-[9px] sm:text-[10px] font-bold">
+        <span class="px-1.5 sm:px-2 py-0.5 rounded-full ${char.studio === "Pixar" ? "bg-purple-100 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300" : "bg-sky-100 dark:bg-sky-950/70 text-sky-700 dark:text-sky-300"}">
+          ${char.studio}
+        </span>
+        <span class="text-slate-400 dark:text-slate-500 truncate max-w-[80px] sm:max-w-[110px] font-medium">${char.movie}</span>
+      </div>
+
+      <!-- Foto Real -->
+      <div class="relative w-full flex-1 my-1 sm:my-2 flex items-center justify-center overflow-hidden rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 p-1">
+        <img
+          src="${char.imageUrl}"
+          alt="${char.name}"
+          loading="lazy"
+          decoding="async"
+          referrerpolicy="no-referrer"
+          class="w-full h-full object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        />
+        <div class="hidden w-full h-full items-center justify-center text-slate-300 dark:text-slate-600">
+          <svg class="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Nombre -->
+      <div class="w-full text-center">
+        <h3 class="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
+          ${char.name}
+        </h3>
+      </div>
+
+      <!-- Sello de Descartado -->
+      <div class="absolute inset-0 bg-slate-950/20 backdrop-blur-[1px] hidden items-center justify-center pointer-events-none group-data-[discarded=true]:flex">
+        <span class="bg-rose-600 text-white font-black text-[10px] sm:text-xs px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full shadow-lg -rotate-12 border-2 border-white tracking-wider">
+          DESCARTADO ✕
+        </span>
+      </div>
+    `;
+
+    btn.addEventListener("click", () => {
+      sounds.playFlip();
+      const isDiscarded = btn.dataset.discarded === "true";
+      btn.dataset.discarded = isDiscarded ? "false" : "true";
+    });
+
+    return btn;
+  }
+
+  async function loadNewRound() {
+    try {
+      const res = await fetch("/api/characters.json?count=12");
+      const data = await res.json();
+      const characters: Character[] = data.characters;
+
+      grid.innerHTML = "";
+      characters.forEach((c) => grid.appendChild(renderCard(c)));
+
+      sounds.playFlip();
+      window.dispatchEvent(
+        new CustomEvent("game:characters-loaded", { detail: { characters } }),
+      );
+    } catch (err) {
+      console.error("Error cargando personajes:", err);
+    }
+  }
+
+  window.addEventListener("game:request-new-round", loadNewRound);
+  window.addEventListener("game:request-reset-flips", () => {
+    grid
+      .querySelectorAll<HTMLButtonElement>("button[data-id]")
+      .forEach((btn) => {
+        btn.dataset.discarded = "false";
+      });
+  });
+
+  loadNewRound();
+</script>
