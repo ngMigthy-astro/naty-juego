@@ -8,14 +8,14 @@ export interface Character {
 }
 
 export const CHARACTERS: Character[] = [
-  // --- PIXAR (12) ---
+  // --- PIXAR (17) ---
   {
     id: "woody",
     name: "Woody",
     movie: "Toy Story",
     studio: "Pixar",
     imageUrl:
-      "https://static.wikia.nocookie.net/disney/images/4/4d/Profile_-_Woody.png",
+      "https://static.wikia.nocookie.net/pixar/images/e/ef/Woody_profile.jpg",
   },
   {
     id: "buzz",
@@ -24,6 +24,22 @@ export const CHARACTERS: Character[] = [
     studio: "Pixar",
     imageUrl:
       "https://static.wikia.nocookie.net/disney/images/7/74/Profile_-_Buzz_Lightyear.jpeg",
+  },
+  {
+    id: "jessie",
+    name: "Jessie",
+    movie: "Toy Story",
+    studio: "Pixar",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/1/11/Profile_-_Jessie.jpeg",
+  },
+  {
+    id: "rex",
+    name: "Rex",
+    movie: "Toy Story",
+    studio: "Pixar",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/5/56/Profile_-_Rex.jpeg",
   },
   {
     id: "miguel",
@@ -58,12 +74,36 @@ export const CHARACTERS: Character[] = [
       "https://static.wikia.nocookie.net/disney/images/e/eb/Profile_-_Joy.png",
   },
   {
+    id: "sadness",
+    name: "Tristeza",
+    movie: "Intensa-Mente",
+    studio: "Pixar",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/a/ad/Profile_-_Sadness.png",
+  },
+  {
+    id: "anger",
+    name: "Furia",
+    movie: "Intensa-Mente",
+    studio: "Pixar",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/5/5a/Profile_-_Anger.png",
+  },
+  {
     id: "mcqueen",
     name: "Rayo McQueen",
     movie: "Cars",
     studio: "Pixar",
     imageUrl:
       "https://static.wikia.nocookie.net/disney/images/1/10/Profile_-_Lightning_McQueen.png",
+  },
+  {
+    id: "mater",
+    name: "Mate",
+    movie: "Cars",
+    studio: "Pixar",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/6/63/Profile-_Mater.png",
   },
   {
     id: "merida",
@@ -106,7 +146,7 @@ export const CHARACTERS: Character[] = [
       "https://static.wikia.nocookie.net/disney/images/3/36/Profile_-_Dory.png",
   },
 
-  // --- DISNEY (12) ---
+  // --- DISNEY (17) ---
   {
     id: "elsa",
     name: "Elsa",
@@ -114,6 +154,22 @@ export const CHARACTERS: Character[] = [
     studio: "Disney",
     imageUrl:
       "https://static.wikia.nocookie.net/disney/images/9/95/Profile_-_Elsa.jpeg",
+  },
+  {
+    id: "anna",
+    name: "Anna",
+    movie: "Frozen",
+    studio: "Disney",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/0/0f/Profile_-_Anna.jpeg",
+  },
+  {
+    id: "olaf",
+    name: "Olaf",
+    movie: "Frozen",
+    studio: "Disney",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/5/53/Profile_-_Olaf.jpeg",
   },
   {
     id: "moana",
@@ -138,6 +194,22 @@ export const CHARACTERS: Character[] = [
     studio: "Disney",
     imageUrl:
       "https://static.wikia.nocookie.net/disney/images/2/2e/Profile_-_Mirabel_Madrigal.png",
+  },
+  {
+    id: "bruno",
+    name: "Bruno",
+    movie: "Encanto",
+    studio: "Disney",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/3/33/Profile_-_Bruno_Madrigal.png",
+  },
+  {
+    id: "luisa",
+    name: "Luisa",
+    movie: "Encanto",
+    studio: "Disney",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/d/df/Profile_-_Luisa_Madrigal.jpg",
   },
   {
     id: "stitch",
@@ -178,6 +250,14 @@ export const CHARACTERS: Character[] = [
     studio: "Disney",
     imageUrl:
       "https://static.wikia.nocookie.net/disney/images/b/bb/Profile_-_Aladdin.png",
+  },
+  {
+    id: "genie",
+    name: "El Genio",
+    movie: "Aladdín",
+    studio: "Disney",
+    imageUrl:
+      "https://static.wikia.nocookie.net/disney/images/9/92/Profile_-_Genie.jpeg",
   },
   {
     id: "ariel",

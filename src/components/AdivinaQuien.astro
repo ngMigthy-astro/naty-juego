@@ -15,7 +15,7 @@ import WinControls from "./WinControls.astro";
   <!-- Controles Responsive -->
   <RoundControls />
 
-  <!-- Diálogo accesible secreto -->
+  <!-- Diálogo accesible secreto con Selector de Naty -->
   <SecretModal />
 
   <!-- Tablero dinámico de 12 cartas -->
@@ -34,9 +34,38 @@ import WinControls from "./WinControls.astro";
 
 <script>
   import { sounds } from "../utils/audio";
-  import type { Character } from "../data/characters";
+  import { CHARACTERS, type Character } from "../data/characters";
 
   const grid = document.getElementById("cards-grid")!;
+  let lastUsedIds = new Set<string>();
+
+  // Barajado inteligente que evita repetir los mismos de la ronda anterior
+  function getRandom12Characters(): Character[] {
+    // 1. Separar los que no estuvieron en la última ronda de los que sí
+    const fresh = CHARACTERS.filter((c) => !lastUsedIds.has(c.id));
+    const previous = CHARACTERS.filter((c) => lastUsedIds.has(c.id));
+
+    // 2. Barajar ambos grupos con Fisher-Yates
+    const shuffle = (arr: Character[]) => {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    };
+
+    const shuffledFresh = shuffle(fresh);
+    const shuffledPrevious = shuffle(previous);
+
+    // 3. Tomar primero los frescos y rellenar con los otros
+    const combined = [...shuffledFresh, ...shuffledPrevious];
+    const selected = combined.slice(0, 12);
+
+    // Guardar para la siguiente ronda
+    lastUsedIds = new Set(selected.map((c) => c.id));
+    return shuffle(selected);
+  }
 
   function renderCard(char: Character): HTMLElement {
     const btn = document.createElement("button");
@@ -95,22 +124,16 @@ import WinControls from "./WinControls.astro";
     return btn;
   }
 
-  async function loadNewRound() {
-    try {
-      const res = await fetch("/api/characters.json?count=12");
-      const data = await res.json();
-      const characters: Character[] = data.characters;
+  function loadNewRound() {
+    const characters = getRandom12Characters();
 
-      grid.innerHTML = "";
-      characters.forEach((c) => grid.appendChild(renderCard(c)));
+    grid.innerHTML = "";
+    characters.forEach((c) => grid.appendChild(renderCard(c)));
 
-      sounds.playFlip();
-      window.dispatchEvent(
-        new CustomEvent("game:characters-loaded", { detail: { characters } }),
-      );
-    } catch (err) {
-      console.error("Error cargando personajes:", err);
-    }
+    sounds.playFlip();
+    window.dispatchEvent(
+      new CustomEvent("game:characters-loaded", { detail: { characters } }),
+    );
   }
 
   window.addEventListener("game:request-new-round", loadNewRound);
