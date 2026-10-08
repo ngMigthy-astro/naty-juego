@@ -1,0 +1,382 @@
+---
+// src/components/MeLaJuegoModal.astro
+import { Zap, Trophy, X, ShieldAlert, Check } from "lucide-astro";
+---
+
+<dialog
+  id="dialog-mela-juego"
+  class="p-4 sm:p-6 rounded-3xl backdrop:bg-slate-950/80 backdrop:backdrop-blur-xs max-w-sm sm:max-w-md w-full border-2 border-amber-400 dark:border-amber-600 bg-white dark:bg-slate-900 shadow-2xl m-auto text-center transition-colors overflow-hidden"
+>
+  <!-- Cabecera -->
+  <div class="flex justify-between items-center mb-3">
+    <div class="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-black text-xs sm:text-sm uppercase tracking-wider">
+      <Zap class="w-4 h-4 fill-amber-500 text-amber-500" />
+      <span>¡Me la Juego!</span>
+    </div>
+    <button
+      type="button"
+      id="btn-close-mela-juego"
+      class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg cursor-pointer"
+    >
+      ✕
+    </button>
+  </div>
+
+  <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3 text-left">
+    Tiro a ciegas: Si adivinas al personaje ganas <strong class="text-amber-600 dark:text-amber-400 font-black">+3 PUNTOS</strong>. Si fallas, <strong>¡el punto se lo regalas a tu rival!</strong>
+  </p>
+
+  <!-- Paso 1: ¿Quién se la juega? -->
+  <div id="mela-step-selector" class="flex flex-col gap-3">
+    <div class="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+      <span class="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 pl-1">
+        ¿Quién dispara?:
+      </span>
+      <button
+        type="button"
+        id="btn-gambler-p1"
+        class="flex-1 py-1.5 px-2 rounded-xl text-xs font-black bg-indigo-600 text-white shadow-xs transition-all cursor-pointer border-b-2 border-indigo-800"
+      >
+        <span id="mela-name-p1">Naty</span>
+      </button>
+      <button
+        type="button"
+        id="btn-gambler-p2"
+        class="flex-1 py-1.5 px-2 rounded-xl text-xs font-black bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 transition-all cursor-pointer"
+      >
+        <span id="mela-name-p2">César</span>
+      </button>
+    </div>
+
+    <!-- Grilla de los 12 personajes para elegir -->
+    <div class="text-left">
+      <p class="text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
+        Toca quién crees que tiene tu rival:
+      </p>
+      <div
+        id="mela-characters-grid"
+        class="grid grid-cols-4 gap-1.5 max-h-48 overflow-y-auto p-1.5 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800"
+      >
+        <!-- Inyectado dinámicamente con los 12 personajes -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Paso 2: Confirmación del Tiro -->
+  <div id="mela-step-confirm" class="hidden flex-col items-center gap-3 py-2">
+    <div class="w-full p-3 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border-2 border-dashed border-amber-300 dark:border-amber-700/60 flex flex-col items-center gap-2">
+      <div class="w-16 h-16 rounded-xl overflow-hidden bg-white dark:bg-slate-900 p-1 border border-amber-200 dark:border-amber-800 shadow-sm">
+        <img id="mela-confirm-img" src="" alt="" class="w-full h-full object-contain" />
+      </div>
+      <div>
+        <p class="text-[11px] font-bold text-amber-700 dark:text-amber-300">
+          <span id="mela-confirm-gambler-name">Naty</span> se la juega por:
+        </p>
+        <h4 id="mela-confirm-char-name" class="text-base font-black text-slate-900 dark:text-white">
+          Woody
+        </h4>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-2 w-full">
+      <button
+        type="button"
+        id="btn-cancel-shot"
+        class="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition cursor-pointer"
+      >
+        Elegir otro
+      </button>
+      <button
+        type="button"
+        id="btn-execute-shot"
+        class="py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-white text-xs font-black border-b-4 border-amber-700 active:border-b-0 active:translate-y-1 transition cursor-pointer shadow-md shadow-amber-500/20"
+      >
+        ¡Confirmar Tiro (+3 Pts)!
+      </button>
+    </div>
+  </div>
+
+  <!-- Paso 3A: Confirmación Manual (cuando no había secreto registrado en la app) -->
+  <div id="mela-step-manual-verify" class="hidden flex-col items-center gap-3 py-2">
+    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">
+      ¿El rival confirma que su personaje era <strong id="mela-manual-char-name">...</strong>?
+    </p>
+    <div class="grid grid-cols-2 gap-2 w-full">
+      <button
+        type="button"
+        id="btn-manual-success"
+        class="py-2.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 transition cursor-pointer"
+      >
+        🎉 ¡Sí, le atinó! (+3 Pts)
+      </button>
+      <button
+        type="button"
+        id="btn-manual-fail"
+        class="py-2.5 px-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black border-b-4 border-rose-800 active:border-b-0 active:translate-y-1 transition cursor-pointer"
+      >
+        💥 No, falló
+      </button>
+    </div>
+  </div>
+
+  <!-- Paso 4: Resultado del Tiro -->
+  <div id="mela-step-result" class="hidden flex-col items-center gap-3 py-2">
+    <div id="mela-result-banner" class="w-full p-4 rounded-2xl flex flex-col items-center gap-1.5">
+      <div id="mela-result-icon" class="text-3xl mb-1">🎉</div>
+      <h3 id="mela-result-title" class="text-base font-black">
+        ¡Resultado!
+      </h3>
+      <p id="mela-result-desc" class="text-xs font-medium">
+        Detalle del punto
+      </p>
+    </div>
+
+    <button
+      type="button"
+      id="btn-mela-next-round"
+      class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black uppercase tracking-wider border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1 transition cursor-pointer shadow-sm"
+    >
+      Siguiente Ronda
+    </button>
+  </div>
+</dialog>
+
+<script>
+  import { sounds } from "../utils/audio";
+  import { launchConfetti } from "../utils/confetti";
+  import type { Character } from "../data/characters";
+
+  const dialog = document.getElementById("dialog-mela-juego") as HTMLDialogElement;
+  const btnClose = document.getElementById("btn-close-mela-juego")!;
+  const btnGamblerP1 = document.getElementById("btn-gambler-p1")!;
+  const btnGamblerP2 = document.getElementById("btn-gambler-p2")!;
+  const nameLabelP1 = document.getElementById("mela-name-p1")!;
+  const nameLabelP2 = document.getElementById("mela-name-p2")!;
+  const charactersGrid = document.getElementById("mela-characters-grid")!;
+
+  // Pasos
+  const stepSelector = document.getElementById("mela-step-selector")!;
+  const stepConfirm = document.getElementById("mela-step-confirm")!;
+  const stepManualVerify = document.getElementById("mela-step-manual-verify")!;
+  const stepResult = document.getElementById("mela-step-result")!;
+
+  // Confirmación
+  const confirmImg = document.getElementById("mela-confirm-img") as HTMLImageElement;
+  const confirmGamblerName = document.getElementById("mela-confirm-gambler-name")!;
+  const confirmCharName = document.getElementById("mela-confirm-char-name")!;
+  const btnCancelShot = document.getElementById("btn-cancel-shot")!;
+  const btnExecuteShot = document.getElementById("btn-execute-shot")!;
+
+  // Verificación manual
+  const manualCharName = document.getElementById("mela-manual-char-name")!;
+  const btnManualSuccess = document.getElementById("btn-manual-success")!;
+  const btnManualFail = document.getElementById("btn-manual-fail")!;
+
+  // Resultado
+  const resultBanner = document.getElementById("mela-result-banner")!;
+  const resultIcon = document.getElementById("mela-result-icon")!;
+  const resultTitle = document.getElementById("mela-result-title")!;
+  const resultDesc = document.getElementById("mela-result-desc")!;
+  const btnNextRound = document.getElementById("btn-mela-next-round")!;
+
+  // Estado interno
+  let activeGambler: 1 | 2 = 1;
+  let p1Name = "Naty";
+  let p2Name = "César";
+  let currentCharacters: Character[] = [];
+  let registeredSecret: Character | null = null;
+  let selectedCandidate: Character | null = null;
+
+  function updateGamblerUI() {
+    if (activeGambler === 1) {
+      btnGamblerP1.className =
+        "flex-1 py-1.5 px-2 rounded-xl text-xs font-black bg-indigo-600 text-white shadow-xs transition-all cursor-pointer border-b-2 border-indigo-800";
+      btnGamblerP2.className =
+        "flex-1 py-1.5 px-2 rounded-xl text-xs font-black bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 transition-all cursor-pointer";
+    } else {
+      btnGamblerP2.className =
+        "flex-1 py-1.5 px-2 rounded-xl text-xs font-black bg-amber-500 text-white shadow-xs transition-all cursor-pointer border-b-2 border-amber-700";
+      btnGamblerP1.className =
+        "flex-1 py-1.5 px-2 rounded-xl text-xs font-black bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 transition-all cursor-pointer";
+    }
+  }
+
+  btnGamblerP1.addEventListener("click", () => {
+    activeGambler = 1;
+    sounds.playQuestionTick();
+    updateGamblerUI();
+  });
+
+  btnGamblerP2.addEventListener("click", () => {
+    activeGambler = 2;
+    sounds.playQuestionTick();
+    updateGamblerUI();
+  });
+
+  function renderCharacters(chars: Character[]) {
+    charactersGrid.innerHTML = "";
+    chars.forEach((char) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className =
+        "flex flex-col items-center p-1 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 hover:border-amber-400 transition cursor-pointer text-center";
+      btn.innerHTML = `
+        <div class="w-10 h-10 rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-800 p-0.5 mb-1 pointer-events-none">
+          <img src="${char.imageUrl}" alt="${char.name}" referrerpolicy="no-referrer" class="w-full h-full object-contain" />
+        </div>
+        <span class="text-[9px] font-bold text-slate-800 dark:text-slate-200 truncate w-full pointer-events-none">${char.name}</span>
+      `;
+      btn.addEventListener("click", () => {
+        sounds.playFlip();
+        chooseCandidate(char);
+      });
+      charactersGrid.appendChild(btn);
+    });
+  }
+
+  function chooseCandidate(char: Character) {
+    selectedCandidate = char;
+    confirmImg.src = char.imageUrl;
+    confirmGamblerName.textContent = activeGambler === 1 ? p1Name : p2Name;
+    confirmCharName.textContent = char.name;
+
+    stepSelector.classList.add("hidden");
+    stepConfirm.classList.remove("hidden");
+    stepConfirm.classList.add("flex");
+  }
+
+  btnCancelShot.addEventListener("click", () => {
+    selectedCandidate = null;
+    stepConfirm.classList.add("hidden");
+    stepConfirm.classList.remove("flex");
+    stepSelector.classList.remove("hidden");
+  });
+
+  btnExecuteShot.addEventListener("click", () => {
+    if (!selectedCandidate) return;
+
+    // Si hay personaje secreto registrado en la app
+    if (registeredSecret) {
+      if (selectedCandidate.id === registeredSecret.id) {
+        handleSuccess();
+      } else {
+        handleFailure(registeredSecret.name);
+      }
+    } else {
+      // Verificación manual por parte de los jugadores
+      stepConfirm.classList.add("hidden");
+      stepConfirm.classList.remove("flex");
+      manualCharName.textContent = selectedCandidate.name;
+      stepManualVerify.classList.remove("hidden");
+      stepManualVerify.classList.add("flex");
+    }
+  });
+
+  btnManualSuccess.addEventListener("click", () => handleSuccess());
+  btnManualFail.addEventListener("click", () => handleFailure());
+
+  function handleSuccess() {
+    const winnerName = activeGambler === 1 ? p1Name : p2Name;
+    sounds.playVictory();
+    launchConfetti();
+    setTimeout(() => launchConfetti(), 400);
+
+    resultBanner.className =
+      "w-full p-4 rounded-2xl flex flex-col items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/50 border-2 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200";
+    resultIcon.textContent = "🎉";
+    resultTitle.textContent = "¡LE ATINASTE A LA PRIMERA!";
+    resultDesc.textContent = `¡Tiro legendario! +3 PUNTOS para ${winnerName}.`;
+
+    window.dispatchEvent(
+      new CustomEvent("game:add-point", {
+        detail: { player: activeGambler, points: 3 },
+      }),
+    );
+
+    showResult();
+  }
+
+  function handleFailure(actualName?: string) {
+    const rivalPlayer = activeGambler === 1 ? 2 : 1;
+    const rivalName = rivalPlayer === 1 ? p1Name : p2Name;
+    sounds.playFail();
+
+    resultBanner.className =
+      "w-full p-4 rounded-2xl flex flex-col items-center gap-1.5 bg-rose-50 dark:bg-rose-950/50 border-2 border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200";
+    resultIcon.textContent = "💥";
+    resultTitle.textContent = "¡FALLASTE EL TIRO!";
+    resultDesc.textContent = actualName
+      ? `El personaje era ${actualName}. ¡Punto directo para ${rivalName}!`
+      : `No era ese personaje. ¡Punto directo para ${rivalName}!`;
+
+    window.dispatchEvent(
+      new CustomEvent("game:add-point", { detail: { player: rivalPlayer } }),
+    );
+
+    showResult();
+  }
+
+  function showResult() {
+    stepConfirm.classList.add("hidden");
+    stepConfirm.classList.remove("flex");
+    stepManualVerify.classList.add("hidden");
+    stepManualVerify.classList.remove("flex");
+
+    stepResult.classList.remove("hidden");
+    stepResult.classList.add("flex");
+  }
+
+  btnNextRound.addEventListener("click", () => {
+    dialog.close();
+    window.dispatchEvent(new CustomEvent("game:request-new-round"));
+  });
+
+  function resetModalState() {
+    stepSelector.classList.remove("hidden");
+    stepConfirm.classList.add("hidden");
+    stepConfirm.classList.remove("flex");
+    stepManualVerify.classList.add("hidden");
+    stepManualVerify.classList.remove("flex");
+    stepResult.classList.add("hidden");
+    stepResult.classList.remove("flex");
+    selectedCandidate = null;
+    updateGamblerUI();
+  }
+
+  window.addEventListener("game:open-mela-juego", () => {
+    resetModalState();
+    dialog.showModal();
+  });
+
+  btnClose.addEventListener("click", () => dialog.close());
+  dialog.addEventListener("click", (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+
+  window.addEventListener("game:characters-loaded", ((e: CustomEvent) => {
+    currentCharacters = e.detail?.characters || [];
+    renderCharacters(currentCharacters);
+  }) as EventListener);
+
+  window.addEventListener("game:secret-changed", ((e: CustomEvent) => {
+    registeredSecret = e.detail?.character || null;
+  }) as EventListener);
+
+  window.addEventListener("game:players-updated", ((e: CustomEvent) => {
+    if (e.detail?.p1Name) {
+      p1Name = e.detail.p1Name;
+      nameLabelP1.textContent = p1Name;
+    }
+    if (e.detail?.p2Name) {
+      p2Name = e.detail.p2Name;
+      nameLabelP2.textContent = p2Name;
+    }
+  }) as EventListener);
+
+  window.addEventListener("game:roles-changed", ((e: CustomEvent) => {
+    if (e.detail?.guesser) {
+      activeGambler = e.detail.guesser;
+      updateGamblerUI();
+    }
+  }) as EventListener);
+</script>

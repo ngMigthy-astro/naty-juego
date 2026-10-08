@@ -3,20 +3,67 @@
 import ScoreBoard from "./ScoreBoard.astro";
 import RoundControls from "./RoundControls.astro";
 import SecretModal from "./SecretModal.astro";
+import MeLaJuegoModal from "./MeLaJuegoModal.astro";
+import ChampionModal from "./ChampionModal.astro";
+import HardModeModal from "./HardModeModal.astro";
 import WinControls from "./WinControls.astro";
 ---
 
 <div
   class="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 w-full flex flex-col gap-4 sm:gap-6 overflow-x-clip"
 >
-  <!-- Marcador Responsive -->
+  <!-- Marcador Responsive con Campeón de Campeones -->
   <ScoreBoard />
 
-  <!-- Controles Responsive -->
+  <!-- Controles Responsive con ¡Me la juego!, 2 Turnos y Modo Hard -->
   <RoundControls />
 
-  <!-- Diálogo accesible secreto con Selector de Naty -->
+  <!-- Diálogo accesible secreto con Selector de Naty y Alarma Espía -->
   <SecretModal />
+
+  <!-- Diálogo ¡Me la juego! (Tiro a ciegas +3 pts) -->
+  <MeLaJuegoModal />
+
+  <!-- Diálogo Campeón de Campeones -->
+  <ChampionModal />
+
+  <!-- Diálogo Modo Hard (Reglas Prohibidas) -->
+  <HardModeModal />
+
+  <!-- Banner Dinámico: ¡DEBES ADIVINAR AHORA ${NOMBRE_JUGADOR}! -->
+  <div
+    id="banner-guess-mode"
+    class="hidden w-full p-3 sm:p-4 rounded-3xl bg-linear-to-r from-amber-500/20 via-rose-500/20 to-amber-500/20 border-2 border-amber-400 dark:border-amber-500 shadow-md flex flex-col sm:flex-row items-center justify-between gap-2.5 animate-pulse"
+  >
+    <div class="flex items-center gap-2.5">
+      <span class="text-2xl select-none">🎯</span>
+      <div class="text-left">
+        <h3 class="text-xs sm:text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">
+          ¡DEBES ADIVINAR AHORA <span id="banner-guesser-name" class="text-amber-600 dark:text-amber-400">NATY</span>!
+        </h3>
+        <p id="banner-guess-subtitle" class="text-[10px] sm:text-xs font-semibold text-slate-600 dark:text-slate-300">
+          Toca directamente la carta de tu personaje para ganar la ronda
+        </p>
+      </div>
+    </div>
+    <!-- Selector rápido de quién adivina -->
+    <div class="flex items-center gap-1 bg-white/90 dark:bg-slate-900/90 p-1 rounded-xl border border-amber-300 dark:border-amber-700 shrink-0">
+      <button
+        type="button"
+        id="btn-toggle-guesser-p1"
+        class="px-2.5 py-1 rounded-lg text-xs font-black bg-indigo-600 text-white cursor-pointer shadow-xs transition"
+      >
+        <span id="banner-p1-text">Naty</span>
+      </button>
+      <button
+        type="button"
+        id="btn-toggle-guesser-p2"
+        class="px-2.5 py-1 rounded-lg text-xs font-black bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 cursor-pointer transition"
+      >
+        <span id="banner-p2-text">César</span>
+      </button>
+    </div>
+  </div>
 
   <!-- Tablero dinámico de 12 cartas -->
   <main class="w-full">
@@ -30,22 +77,156 @@ import WinControls from "./WinControls.astro";
 
   <!-- Fin de ronda -->
   <WinControls />
+
+  <!-- Modal Celebración de Adivinanza Exitosa Directa -->
+  <dialog
+    id="dialog-guess-success"
+    class="p-4 sm:p-6 rounded-3xl backdrop:bg-slate-950/80 backdrop:backdrop-blur-xs max-w-sm w-full border-2 border-emerald-500 bg-white dark:bg-slate-900 shadow-2xl m-auto text-center transition-colors overflow-hidden"
+  >
+    <div class="flex flex-col items-center gap-3">
+      <div class="text-4xl animate-bounce">🎉</div>
+      <div class="w-20 h-20 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-800 p-1 border border-emerald-300 dark:border-emerald-700 shadow-sm">
+        <img id="guess-success-img" src="" alt="" class="w-full h-full object-contain" />
+      </div>
+      <div>
+        <span class="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+          ¡Adivinanza Correcta! (+1 Punto)
+        </span>
+        <h3 id="guess-success-name" class="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+          Woody
+        </h3>
+        <p id="guess-success-desc" class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          ¡Naty adivinó el personaje secreto!
+        </p>
+      </div>
+      <button
+        type="button"
+        id="btn-guess-success-next-round"
+        class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black uppercase tracking-wider border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1 transition cursor-pointer shadow-sm"
+      >
+        Siguiente Turno / Ronda ➔
+      </button>
+    </div>
+  </dialog>
+
+  <!-- Modal Confirmación Manual si jugaron con personaje mental -->
+  <dialog
+    id="dialog-manual-guess-confirm"
+    class="p-4 sm:p-6 rounded-3xl backdrop:bg-slate-950/80 backdrop:backdrop-blur-xs max-w-sm w-full border-2 border-indigo-500 bg-white dark:bg-slate-900 shadow-2xl m-auto text-center transition-colors overflow-hidden"
+  >
+    <div class="flex flex-col items-center gap-3">
+      <div class="w-20 h-20 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700 shadow-sm">
+        <img id="manual-guess-img" src="" alt="" class="w-full h-full object-contain" />
+      </div>
+
+      <div>
+        <span class="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+          Adivinanza Directa
+        </span>
+        <h3 id="manual-guess-name" class="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+          Woody
+        </h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          ¿Tu rival confirma que su personaje era <strong id="manual-guess-char-strong">...</strong>?
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 w-full mt-1">
+        <button
+          type="button"
+          id="btn-manual-guess-fail"
+          class="py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition cursor-pointer"
+        >
+          💥 No, falló
+        </button>
+        <button
+          type="button"
+          id="btn-manual-guess-ok"
+          class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 transition cursor-pointer shadow-md shadow-emerald-500/20"
+        >
+          🎉 ¡Sí, le atinó! (+1 Pt)
+        </button>
+      </div>
+    </div>
+  </dialog>
 </div>
 
 <script>
   import { sounds } from "../utils/audio";
+  import { launchConfetti } from "../utils/confetti";
   import { CHARACTERS, type Character } from "../data/characters";
 
   const grid = document.getElementById("cards-grid")!;
-  let lastUsedIds = new Set<string>();
+  const bannerGuessMode = document.getElementById("banner-guess-mode")!;
+  const bannerGuesserName = document.getElementById("banner-guesser-name")!;
+  const bannerGuessSubtitle = document.getElementById("banner-guess-subtitle")!;
+  const btnToggleP1 = document.getElementById("btn-toggle-guesser-p1")!;
+  const btnToggleP2 = document.getElementById("btn-toggle-guesser-p2")!;
+  const bannerP1Text = document.getElementById("banner-p1-text")!;
+  const bannerP2Text = document.getElementById("banner-p2-text")!;
 
-  // Barajado inteligente que evita repetir los mismos de la ronda anterior
+  let lastUsedIds = new Set<string>();
+  let isGuessModeActive = false;
+  let registeredSecret: Character | null = null;
+  let pendingChar: Character | null = null;
+  let pendingBtn: HTMLElement | null = null;
+
+  // Jugadores para adivinanza
+  let p1Name = "Naty";
+  let p2Name = "César";
+  let activeGuesser: 1 | 2 = 1;
+
+  // Dialog Éxito en Adivinanza Directa
+  const dialogSuccess = document.getElementById("dialog-guess-success") as HTMLDialogElement;
+  const guessSuccessImg = document.getElementById("guess-success-img") as HTMLImageElement;
+  const guessSuccessName = document.getElementById("guess-success-name")!;
+  const guessSuccessDesc = document.getElementById("guess-success-desc")!;
+  const btnSuccessNextRound = document.getElementById("btn-guess-success-next-round")!;
+
+  // Dialog Confirmación Manual
+  const dialogManual = document.getElementById("dialog-manual-guess-confirm") as HTMLDialogElement;
+  const manualImg = document.getElementById("manual-guess-img") as HTMLImageElement;
+  const manualName = document.getElementById("manual-guess-name")!;
+  const manualStrong = document.getElementById("manual-guess-char-strong")!;
+  const btnManualFail = document.getElementById("btn-manual-guess-fail")!;
+  const btnManualOk = document.getElementById("btn-manual-guess-ok")!;
+
+  function syncGuesserToggleUI() {
+    const currentName = activeGuesser === 1 ? p1Name : p2Name;
+    bannerGuesserName.textContent = currentName.toUpperCase();
+
+    if (activeGuesser === 1) {
+      btnToggleP1.className =
+        "px-2.5 py-1 rounded-lg text-xs font-black bg-indigo-600 text-white cursor-pointer shadow-xs transition";
+      btnToggleP2.className =
+        "px-2.5 py-1 rounded-lg text-xs font-black bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 cursor-pointer transition";
+    } else {
+      btnToggleP2.className =
+        "px-2.5 py-1 rounded-lg text-xs font-black bg-amber-500 text-white cursor-pointer shadow-xs transition";
+      btnToggleP1.className =
+        "px-2.5 py-1 rounded-lg text-xs font-black bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 cursor-pointer transition";
+    }
+  }
+
+  btnToggleP1.addEventListener("click", () => {
+    activeGuesser = 1;
+    sounds.playQuestionTick();
+    syncGuesserToggleUI();
+    window.dispatchEvent(new CustomEvent("game:set-guesser", { detail: { guesser: 1 } }));
+  });
+
+  btnToggleP2.addEventListener("click", () => {
+    activeGuesser = 2;
+    sounds.playQuestionTick();
+    syncGuesserToggleUI();
+    window.dispatchEvent(new CustomEvent("game:set-guesser", { detail: { guesser: 2 } }));
+  });
+
+  // Barajado inteligente
   function getRandom12Characters(): Character[] {
-    // 1. Separar los que no estuvieron en la última ronda de los que sí
     const fresh = CHARACTERS.filter((c) => !lastUsedIds.has(c.id));
     const previous = CHARACTERS.filter((c) => lastUsedIds.has(c.id));
 
-    // 2. Barajar ambos grupos con Fisher-Yates
     const shuffle = (arr: Character[]) => {
       const copy = [...arr];
       for (let i = copy.length - 1; i > 0; i--) {
@@ -58,11 +239,9 @@ import WinControls from "./WinControls.astro";
     const shuffledFresh = shuffle(fresh);
     const shuffledPrevious = shuffle(previous);
 
-    // 3. Tomar primero los frescos y rellenar con los otros
     const combined = [...shuffledFresh, ...shuffledPrevious];
     const selected = combined.slice(0, 12);
 
-    // Guardar para la siguiente ronda
     lastUsedIds = new Set(selected.map((c) => c.id));
     return shuffle(selected);
   }
@@ -116,13 +295,92 @@ import WinControls from "./WinControls.astro";
     `;
 
     btn.addEventListener("click", () => {
-      sounds.playFlip();
-      const isDiscarded = btn.dataset.discarded === "true";
-      btn.dataset.discarded = isDiscarded ? "false" : "true";
+      if (isGuessModeActive) {
+        // MODO ADIVINANZA: Tap directo sobre la carta
+        if (registeredSecret) {
+          if (registeredSecret.id === char.id) {
+            // ¡LE ATINÓ AL PERSONAJE SECRETO!
+            sounds.playVictory();
+            launchConfetti();
+            setTimeout(() => launchConfetti(), 400);
+
+            window.dispatchEvent(
+              new CustomEvent("game:add-point", {
+                detail: { player: activeGuesser, points: 1 },
+              }),
+            );
+
+            const winnerName = activeGuesser === 1 ? p1Name : p2Name;
+            guessSuccessImg.src = char.imageUrl;
+            guessSuccessName.textContent = char.name;
+            guessSuccessDesc.textContent = `¡${winnerName} adivinó el personaje secreto! Ganó 1 punto.`;
+            dialogSuccess.showModal();
+          } else {
+            // FALLÓ EL TIRO
+            sounds.playFail();
+            btn.dataset.discarded = "true";
+            bannerGuessSubtitle.textContent = `💥 ¡No era ${char.name}! Prueba con otra carta...`;
+          }
+        } else {
+          // Si jugaron de memoria sin secreto en la app, abre confirmación
+          pendingChar = char;
+          pendingBtn = btn;
+          manualImg.src = char.imageUrl;
+          manualName.textContent = char.name;
+          manualStrong.textContent = char.name;
+          dialogManual.showModal();
+          sounds.playQuestionTick();
+        }
+      } else {
+        // MODO NORMAL: Volteo / descarte de carta
+        sounds.playFlip();
+        const isDiscarded = btn.dataset.discarded === "true";
+        btn.dataset.discarded = isDiscarded ? "false" : "true";
+
+        // Notifica actividad para el temporizador automático de turnos
+        window.dispatchEvent(new CustomEvent("game:card-flipped"));
+      }
     });
 
     return btn;
   }
+
+  // Confirmación manual si jugaron con memoria
+  btnManualOk.addEventListener("click", () => {
+    dialogManual.close();
+    sounds.playVictory();
+    launchConfetti();
+    setTimeout(() => launchConfetti(), 400);
+    window.dispatchEvent(
+      new CustomEvent("game:add-point", { detail: { player: activeGuesser, points: 1 } }),
+    );
+    if (pendingChar) {
+      const winnerName = activeGuesser === 1 ? p1Name : p2Name;
+      guessSuccessImg.src = pendingChar.imageUrl;
+      guessSuccessName.textContent = pendingChar.name;
+      guessSuccessDesc.textContent = `¡${winnerName} adivinó el personaje secreto! Ganó 1 punto.`;
+      dialogSuccess.showModal();
+    }
+  });
+
+  btnManualFail.addEventListener("click", () => {
+    dialogManual.close();
+    sounds.playFail();
+    if (pendingBtn) pendingBtn.dataset.discarded = "true";
+  });
+
+  dialogManual.addEventListener("click", (e) => {
+    if (e.target === dialogManual) dialogManual.close();
+  });
+
+  btnSuccessNextRound.addEventListener("click", () => {
+    dialogSuccess.close();
+    window.dispatchEvent(new CustomEvent("game:request-new-round"));
+  });
+
+  dialogSuccess.addEventListener("click", (e) => {
+    if (e.target === dialogSuccess) dialogSuccess.close();
+  });
 
   function loadNewRound() {
     const characters = getRandom12Characters();
@@ -145,5 +403,48 @@ import WinControls from "./WinControls.astro";
       });
   });
 
+  window.addEventListener("game:guess-mode-active", ((e: CustomEvent) => {
+    isGuessModeActive = Boolean(e.detail?.active);
+    if (e.detail?.guesser) {
+      activeGuesser = e.detail.guesser;
+      syncGuesserToggleUI();
+    }
+    if (isGuessModeActive) {
+      bannerGuessSubtitle.textContent =
+        "Toca directamente la carta de tu personaje para ganar la ronda";
+      bannerGuessMode.classList.remove("hidden");
+      bannerGuessMode.classList.add("flex");
+      sounds.playQuestionTick();
+    } else {
+      bannerGuessMode.classList.add("hidden");
+      bannerGuessMode.classList.remove("flex");
+    }
+  }) as EventListener);
+
+  window.addEventListener("game:secret-changed", ((e: CustomEvent) => {
+    registeredSecret = e.detail?.character || null;
+  }) as EventListener);
+
+  window.addEventListener("game:roles-changed", ((e: CustomEvent) => {
+    if (e.detail?.guesser) {
+      activeGuesser = e.detail.guesser;
+      syncGuesserToggleUI();
+    }
+  }) as EventListener);
+
+  window.addEventListener("game:players-updated", ((e: CustomEvent) => {
+    if (e.detail?.p1Name) {
+      p1Name = e.detail.p1Name;
+      bannerP1Text.textContent = p1Name;
+    }
+    if (e.detail?.p2Name) {
+      p2Name = e.detail.p2Name;
+      bannerP2Text.textContent = p2Name;
+    }
+    syncGuesserToggleUI();
+  }) as EventListener);
+
   loadNewRound();
+  syncGuesserToggleUI();
+  window.dispatchEvent(new CustomEvent("game:request-sync-roles"));
 </script>

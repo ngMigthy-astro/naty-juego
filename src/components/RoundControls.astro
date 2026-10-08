@@ -1,11 +1,29 @@
 ---
 // src/components/RoundControls.astro
-import { Dices, RotateCcw, Eye, X } from "lucide-astro";
+import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
 ---
 
 <section
   class="bg-white dark:bg-slate-900 rounded-3xl p-3.5 sm:p-5 shadow-md border-2 border-slate-200/80 dark:border-slate-800 flex flex-col gap-3 w-full transition-colors"
 >
+  <!-- Fila Roles de la Ronda: Quién esconde y quién adivina -->
+  <div class="flex items-center justify-between gap-2 w-full bg-indigo-50/70 dark:bg-indigo-950/40 p-2 sm:p-2.5 rounded-2xl border border-indigo-200/80 dark:border-indigo-900/60">
+    <div class="flex items-center gap-1.5 min-w-0">
+      <span class="text-sm select-none">🎭</span>
+      <span class="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200 truncate">
+        Esconde: <strong id="role-keeper-name" class="text-indigo-600 dark:text-indigo-400 font-black">Naty</strong> ➔ Adivina: <strong id="role-guesser-name" class="text-amber-600 dark:text-amber-400 font-black">César</strong>
+      </span>
+    </div>
+    <button
+      type="button"
+      id="btn-swap-roles"
+      class="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-300 bg-white dark:bg-slate-900 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 px-2.5 py-1 rounded-xl border border-indigo-200 dark:border-indigo-800 transition cursor-pointer shrink-0 shadow-2xs"
+      title="Cambiar quién esconde y quién adivina"
+    >
+      ⇄ Invertir
+    </button>
+  </div>
+
   <!-- Fila 1: Botones Principales en 2 Columnas -->
   <div class="grid grid-cols-2 gap-2 w-full">
     <button
@@ -27,62 +45,91 @@ import { Dices, RotateCcw, Eye, X } from "lucide-astro";
     </button>
   </div>
 
-  <!-- Fila 2: Preguntas + Personaje Secreto -->
-  <div
-    class="flex items-center justify-between gap-2 w-full flex-wrap sm:flex-nowrap"
-  >
-    <!-- Contador Preguntas -->
+  <!-- Fila 2: Solo 2 Turnos de Preguntas (Auto o Manual) + Modo Hard -->
+  <div class="flex items-center justify-between gap-1.5 w-full bg-slate-50 dark:bg-slate-950/50 p-2 rounded-2xl border border-slate-200/80 dark:border-slate-800 flex-wrap sm:flex-nowrap">
     <div class="flex items-center gap-1.5">
       <span
         class="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 select-none"
       >
-        Turno:
+        Turnos:
       </span>
       <button
         type="button"
+        id="pill-q-1"
         class="q-pill px-2.5 py-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 border-b-4 active:border-b-2 active:translate-y-[2px] bg-white dark:bg-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 transition-all cursor-pointer flex items-center gap-1 shadow-xs"
         data-q="1"
+        title="1ª Pregunta (se auto-marca tras descartar o toca para marcar)"
       >
-        <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 q-dot"
-        ></span>
-        <span>1ª</span>
+        <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 q-dot"></span>
+        <span>1º Turno</span>
       </button>
       <button
         type="button"
+        id="pill-q-2"
         class="q-pill px-2.5 py-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 border-b-4 active:border-b-2 active:translate-y-[2px] bg-white dark:bg-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 transition-all cursor-pointer flex items-center gap-1 shadow-xs"
         data-q="2"
+        title="2ª Pregunta (se auto-marca tras descartar o toca para marcar)"
       >
-        <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 q-dot"
-        ></span>
-        <span>2ª</span>
-      </button>
-      <button
-        type="button"
-        class="q-pill px-2.5 py-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 border-b-4 active:border-b-2 active:translate-y-[2px] bg-white dark:bg-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 transition-all cursor-pointer flex items-center gap-1 shadow-xs"
-        data-q="3"
-      >
-        <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 q-dot"
-        ></span>
-        <span>3ª</span>
+        <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 q-dot"></span>
+        <span>2º Turno</span>
       </button>
       <button
         type="button"
         id="btn-reset-q"
         class="w-6 h-6 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center justify-center transition cursor-pointer"
-        title="Reiniciar preguntas"
+        title="Reiniciar turnos a cero"
       >
         <X class="w-3.5 h-3.5" />
       </button>
+
+      <!-- Badge de Cuenta Regresiva Automática -->
+      <span
+        id="auto-turn-timer"
+        class="hidden text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800 animate-pulse"
+      >
+        Auto...
+      </span>
     </div>
+
+    <!-- Toggle Modo Hard -->
+    <button
+      type="button"
+      id="btn-toggle-hard-mode"
+      class="py-1 px-2.5 rounded-xl text-[10px] font-black border transition cursor-pointer flex items-center gap-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 border-b-2"
+      title="Alternar Modo Hard (Ver lista de prohibiciones)"
+    >
+      <Flame class="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
+      <span>Modo Hard</span>
+      <span id="badge-hard-mode" class="text-[8px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.2 rounded-full font-bold">
+        OFF
+      </span>
+    </button>
+  </div>
+
+  <!-- Fila 3: Botones Especiales (¡Me la juego! + Personaje Secreto) -->
+  <div class="grid grid-cols-2 gap-2 w-full">
+    <!-- Botón ¡Me la juego! (Habilitado solo con 1 pregunta o menos) -->
+    <button
+      type="button"
+      id="btn-open-mela-juego"
+      class="py-2 px-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-white font-black text-xs border-2 border-amber-600 border-b-4 border-b-amber-700 active:border-b-2 active:translate-y-[2px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs truncate"
+      title="Tiro a ciegas: solo disponible con 1 pregunta o menos"
+    >
+      <Zap class="w-3.5 h-3.5 text-amber-200 shrink-0" />
+      <span class="truncate">¡Me la juego!</span>
+      <span id="badge-mela-juego" class="text-[9px] bg-amber-700/80 text-amber-100 px-1.5 py-0.2 rounded-full font-bold shrink-0">
+        Activo
+      </span>
+    </button>
 
     <!-- Botón Personaje Secreto -->
     <button
       type="button"
       id="btn-open-secret-modal"
-      class="flex-1 sm:flex-initial py-1.5 px-3 rounded-2xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-black text-xs border-2 border-indigo-200 dark:border-indigo-800 border-b-4 active:border-b-2 active:translate-y-[2px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs truncate"
+      class="py-2 px-2.5 rounded-2xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-black text-xs border-2 border-indigo-200 dark:border-indigo-800 border-b-4 active:border-b-2 active:translate-y-[2px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs truncate"
     >
       <Eye class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-      <span class="truncate">Personaje Secreto</span>
+      <span id="label-secret-btn" class="truncate">Personaje Secreto</span>
     </button>
   </div>
 </section>
@@ -93,69 +140,185 @@ import { Dices, RotateCcw, Eye, X } from "lucide-astro";
   const btnNewRound = document.getElementById("btn-trigger-new-round")!;
   const btnResetFlips = document.getElementById("btn-trigger-reset-flips")!;
   const btnOpenSecret = document.getElementById("btn-open-secret-modal")!;
-  const qPills = document.querySelectorAll<HTMLButtonElement>(".q-pill");
+  const labelSecretBtn = document.getElementById("label-secret-btn")!;
+  const btnMelaJuego = document.getElementById("btn-open-mela-juego") as HTMLButtonElement;
+  const badgeMelaJuego = document.getElementById("badge-mela-juego")!;
+  const pillQ1 = document.getElementById("pill-q-1") as HTMLButtonElement;
+  const pillQ2 = document.getElementById("pill-q-2") as HTMLButtonElement;
   const btnResetQ = document.getElementById("btn-reset-q")!;
+  const autoTurnTimer = document.getElementById("auto-turn-timer")!;
 
-  btnNewRound.addEventListener("click", () => {
-    window.dispatchEvent(new CustomEvent("game:request-new-round"));
-    resetQuestions();
+  // Roles de la ronda (quién esconde y quién adivina)
+  const roleKeeperName = document.getElementById("role-keeper-name")!;
+  const roleGuesserName = document.getElementById("role-guesser-name")!;
+  const btnSwapRoles = document.getElementById("btn-swap-roles")!;
+
+  let p1Name = "Naty";
+  let p2Name = "César";
+  let keeperPlayer: 1 | 2 = 1; // Por defecto Naty esconde primero
+  let guesserPlayer: 1 | 2 = 2; // César adivina primero
+
+  function syncRolesUI() {
+    const kName = keeperPlayer === 1 ? p1Name : p2Name;
+    const gName = guesserPlayer === 1 ? p1Name : p2Name;
+
+    roleKeeperName.textContent = kName;
+    roleGuesserName.textContent = gName;
+    labelSecretBtn.textContent = `Secreto de ${kName}`;
+
+    window.dispatchEvent(
+      new CustomEvent("game:roles-changed", {
+        detail: {
+          keeper: keeperPlayer,
+          guesser: guesserPlayer,
+          keeperName: kName,
+          guesserName: gName,
+        },
+      }),
+    );
+  }
+
+  btnSwapRoles.addEventListener("click", () => {
+    sounds.playQuestionTick();
+    const prev = keeperPlayer;
+    keeperPlayer = guesserPlayer;
+    guesserPlayer = prev;
+    syncRolesUI();
   });
 
-  btnResetFlips.addEventListener("click", () => {
-    sounds.playFlip();
-    window.dispatchEvent(new CustomEvent("game:request-reset-flips"));
-  });
+  // Modo Hard
+  const btnHardMode = document.getElementById("btn-toggle-hard-mode")!;
+  const badgeHardMode = document.getElementById("badge-hard-mode")!;
+  let isHardModeActive = localStorage.getItem("juegos_naty_hard_mode") === "true";
 
-  btnOpenSecret.addEventListener("click", () => {
-    window.dispatchEvent(new CustomEvent("game:open-secret"));
-  });
+  // Temporizador de auto-marcado
+  let autoMarkTimeout: ReturnType<typeof setTimeout> | null = null;
+  let countdownInterval: ReturnType<typeof setInterval> | null = null;
+  let secondsRemaining = 3;
 
-  qPills.forEach((pill) => {
-    pill.addEventListener("click", () => {
-      sounds.playQuestionTick();
-      const dot = pill.querySelector(".q-dot") as HTMLElement;
-      const isDone = pill.classList.contains("border-indigo-600");
-      if (!isDone) {
-        pill.classList.remove(
-          "border-slate-200",
-          "dark:border-slate-700",
-          "bg-white",
-          "dark:bg-slate-800",
-        );
-        pill.classList.add(
-          "border-indigo-600",
-          "border-b-indigo-800",
-          "bg-indigo-50",
-          "dark:bg-indigo-950/70",
-          "text-indigo-700",
-          "dark:text-indigo-300",
-        );
-        dot.classList.remove("bg-slate-300", "dark:bg-slate-600");
-        dot.classList.add("bg-indigo-600", "dark:bg-indigo-400");
+  function clearAutoTimer() {
+    if (autoMarkTimeout) {
+      clearTimeout(autoMarkTimeout);
+      autoMarkTimeout = null;
+    }
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+    }
+    autoTurnTimer.classList.add("hidden");
+  }
+
+  function handleCardFlipActivity() {
+    const q1Active = pillQ1.classList.contains("q-active");
+    const q2Active = pillQ2.classList.contains("q-active");
+
+    if (q1Active && q2Active) return;
+
+    clearAutoTimer();
+    secondsRemaining = 3;
+    const targetLabel = !q1Active ? "1º Turno" : "2º Turno";
+    autoTurnTimer.textContent = `${targetLabel} en ${secondsRemaining}s...`;
+    autoTurnTimer.classList.remove("hidden");
+
+    countdownInterval = setInterval(() => {
+      secondsRemaining -= 1;
+      if (secondsRemaining > 0) {
+        autoTurnTimer.textContent = `${targetLabel} en ${secondsRemaining}s...`;
       } else {
-        pill.classList.remove(
-          "border-indigo-600",
-          "border-b-indigo-800",
-          "bg-indigo-50",
-          "dark:bg-indigo-950/70",
-          "text-indigo-700",
-          "dark:text-indigo-300",
-        );
-        pill.classList.add(
-          "border-slate-200",
-          "dark:border-slate-700",
-          "bg-white",
-          "dark:bg-slate-800",
-        );
-        dot.classList.remove("bg-indigo-600", "dark:bg-indigo-400");
-        dot.classList.add("bg-slate-300", "dark:bg-slate-600");
+        if (countdownInterval) clearInterval(countdownInterval);
       }
-    });
+    }, 1000);
+
+    autoMarkTimeout = setTimeout(() => {
+      clearAutoTimer();
+      if (!q1Active) {
+        setQuestionState(pillQ1, true);
+      } else if (!q2Active) {
+        setQuestionState(pillQ2, true);
+      }
+      sounds.playQuestionTick();
+    }, 3200);
+  }
+
+  window.addEventListener("game:card-flipped", handleCardFlipActivity);
+
+  function syncHardModeUI() {
+    if (isHardModeActive) {
+      btnHardMode.className =
+        "py-1 px-2.5 rounded-xl text-[10px] font-black border transition cursor-pointer flex items-center gap-1 bg-rose-500 text-white border-rose-600 border-b-2 shadow-xs";
+      badgeHardMode.textContent = "ON";
+      badgeHardMode.className = "text-[8px] bg-rose-700 text-rose-100 px-1.5 py-0.2 rounded-full font-bold";
+    } else {
+      btnHardMode.className =
+        "py-1 px-2.5 rounded-xl text-[10px] font-black border transition cursor-pointer flex items-center gap-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 border-b-2";
+      badgeHardMode.textContent = "OFF";
+      badgeHardMode.className = "text-[8px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.2 rounded-full font-bold";
+    }
+  }
+
+  btnHardMode.addEventListener("click", () => {
+    isHardModeActive = !isHardModeActive;
+    localStorage.setItem("juegos_naty_hard_mode", isHardModeActive ? "true" : "false");
+    syncHardModeUI();
+    sounds.playQuestionTick();
+    if (isHardModeActive) {
+      window.dispatchEvent(new CustomEvent("game:open-hard-mode-info"));
+    }
   });
 
-  function resetQuestions() {
-    qPills.forEach((pill) => {
-      const dot = pill.querySelector(".q-dot") as HTMLElement;
+  function updateGameState() {
+    const activeQuestions = document.querySelectorAll(".q-pill.q-active").length;
+    const isAvailable = activeQuestions <= 1;
+
+    btnMelaJuego.disabled = !isAvailable;
+
+    if (isAvailable) {
+      btnMelaJuego.className =
+        "py-2 px-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-white font-black text-xs border-2 border-amber-600 border-b-4 border-b-amber-700 active:border-b-2 active:translate-y-[2px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs truncate";
+      badgeMelaJuego.textContent = activeQuestions === 0 ? "Tiro libre" : "Última chance";
+      badgeMelaJuego.className =
+        "text-[9px] bg-amber-700/80 text-amber-100 px-1.5 py-0.2 rounded-full font-bold shrink-0";
+    } else {
+      btnMelaJuego.className =
+        "py-2 px-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold text-xs border-2 border-slate-200 dark:border-slate-700 border-b-4 border-b-slate-300 dark:border-b-slate-700 opacity-60 flex items-center justify-center gap-1.5 transition-all cursor-not-allowed shadow-none truncate";
+      badgeMelaJuego.textContent = "Bloqueado (+1 preg)";
+      badgeMelaJuego.className =
+        "text-[9px] bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1.5 py-0.2 rounded-full font-bold shrink-0";
+    }
+
+    const q1Active = pillQ1.classList.contains("q-active");
+    const q2Active = pillQ2.classList.contains("q-active");
+    const isGuessMode = Boolean(q1Active && q2Active);
+
+    window.dispatchEvent(
+      new CustomEvent("game:guess-mode-active", {
+        detail: { active: isGuessMode, guesser: guesserPlayer },
+      }),
+    );
+  }
+
+  function setQuestionState(pill: HTMLButtonElement, makeActive: boolean) {
+    const dot = pill.querySelector(".q-dot") as HTMLElement;
+    if (makeActive) {
+      pill.classList.add("q-active");
+      pill.classList.remove(
+        "border-slate-200",
+        "dark:border-slate-700",
+        "bg-white",
+        "dark:bg-slate-800",
+      );
+      pill.classList.add(
+        "border-indigo-600",
+        "border-b-indigo-800",
+        "bg-indigo-50",
+        "dark:bg-indigo-950/70",
+        "text-indigo-700",
+        "dark:text-indigo-300",
+      );
+      dot.classList.remove("bg-slate-300", "dark:bg-slate-600");
+      dot.classList.add("bg-indigo-600", "dark:bg-indigo-400");
+    } else {
+      pill.classList.remove("q-active");
       pill.classList.remove(
         "border-indigo-600",
         "border-b-indigo-800",
@@ -172,8 +335,78 @@ import { Dices, RotateCcw, Eye, X } from "lucide-astro";
       );
       dot.classList.remove("bg-indigo-600", "dark:bg-indigo-400");
       dot.classList.add("bg-slate-300", "dark:bg-slate-600");
-    });
+    }
+    updateGameState();
   }
 
-  btnResetQ.addEventListener("click", resetQuestions);
+  [pillQ1, pillQ2].forEach((pill) => {
+    pill.addEventListener("click", () => {
+      clearAutoTimer();
+      sounds.playQuestionTick();
+      const isActive = pill.classList.contains("q-active");
+      setQuestionState(pill, !isActive);
+    });
+  });
+
+  function resetQuestions() {
+    clearAutoTimer();
+    setQuestionState(pillQ1, false);
+    setQuestionState(pillQ2, false);
+  }
+
+  btnResetQ.addEventListener("click", () => {
+    sounds.playQuestionTick();
+    resetQuestions();
+  });
+
+  function handleNewRoundTrigger() {
+    const prev = keeperPlayer;
+    keeperPlayer = guesserPlayer;
+    guesserPlayer = prev;
+    syncRolesUI();
+    resetQuestions();
+  }
+
+  btnNewRound.addEventListener("click", () => {
+    window.dispatchEvent(new CustomEvent("game:request-new-round"));
+  });
+
+  window.addEventListener("game:request-new-round", handleNewRoundTrigger);
+
+  btnResetFlips.addEventListener("click", () => {
+    sounds.playFlip();
+    window.dispatchEvent(new CustomEvent("game:request-reset-flips"));
+  });
+
+  btnOpenSecret.addEventListener("click", () => {
+    window.dispatchEvent(new CustomEvent("game:open-secret"));
+  });
+
+  btnMelaJuego.addEventListener("click", () => {
+    const activeQuestions = document.querySelectorAll(".q-pill.q-active").length;
+    if (activeQuestions <= 1) {
+      sounds.playQuestionTick();
+      window.dispatchEvent(new CustomEvent("game:open-mela-juego"));
+    }
+  });
+
+  window.addEventListener("game:players-updated", ((e: CustomEvent) => {
+    if (e.detail?.p1Name) p1Name = e.detail.p1Name;
+    if (e.detail?.p2Name) p2Name = e.detail.p2Name;
+    syncRolesUI();
+  }) as EventListener);
+
+  window.addEventListener("game:request-sync-roles", syncRolesUI);
+
+  window.addEventListener("game:set-guesser", ((e: CustomEvent) => {
+    if (e.detail?.guesser) {
+      guesserPlayer = e.detail.guesser;
+      keeperPlayer = guesserPlayer === 1 ? 2 : 1;
+      syncRolesUI();
+    }
+  }) as EventListener);
+
+  updateGameState();
+  syncHardModeUI();
+  syncRolesUI();
 </script>

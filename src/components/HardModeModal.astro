@@ -1,0 +1,133 @@
+---
+// src/components/HardModeModal.astro
+import { Flame, X, Sparkles, AlertTriangle, CheckCircle2, Dices } from "lucide-astro";
+---
+
+<dialog
+  id="dialog-hard-mode"
+  class="p-4 sm:p-6 rounded-3xl backdrop:bg-slate-950/80 backdrop:backdrop-blur-xs max-w-sm sm:max-w-md w-full border-2 border-rose-500 bg-white dark:bg-slate-900 shadow-2xl m-auto text-left transition-colors overflow-hidden"
+>
+  <div class="flex justify-between items-center mb-3">
+    <div class="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-black text-sm uppercase tracking-wider">
+      <Flame class="w-4 h-4 fill-rose-500 text-rose-500" />
+      <span>Modo Hard: Reglas Pro</span>
+    </div>
+    <button
+      type="button"
+      id="btn-close-hard-mode"
+      class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg cursor-pointer"
+    >
+      ✕
+    </button>
+  </div>
+
+  <p class="text-xs text-slate-600 dark:text-slate-400 mb-3">
+    En este modo están <strong>estrictamente prohibidas</strong> las preguntas obvias o físicas. ¡Solo se vale conocimiento de películas!
+  </p>
+
+  <!-- Lista de Prohibiciones -->
+  <div class="flex flex-col gap-2.5 max-h-60 overflow-y-auto pr-1 mb-3">
+    <!-- Bloque Prohibido -->
+    <div class="p-2.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60">
+      <h4 class="text-[11px] font-black uppercase text-rose-700 dark:text-rose-400 flex items-center gap-1.5 mb-1.5">
+        <AlertTriangle class="w-3.5 h-3.5" />
+        Lista Negra (Cero preguntas fáciles):
+      </h4>
+      <ul class="text-[11px] text-rose-900 dark:text-rose-200/90 space-y-1 font-medium">
+        <li>❌ <strong>Prohibido género:</strong> <em>«¿Es hombre o mujer?»</em></li>
+        <li>❌ <strong>Prohibido especie/tipo:</strong> <em>«¿Es humano, animal, juguete o carro?»</em></li>
+        <li>❌ <strong>Prohibido estudio:</strong> <em>«¿Es de Disney o de Pixar?»</em></li>
+        <li>❌ <strong>Prohibido color físico:</strong> <em>«¿Tiene pelo rubio, ojos cafés o piel verde?»</em></li>
+        <li>❌ <strong>Prohibido ropa:</strong> <em>«¿Usa vestido, sombrero o lentes?»</em></li>
+      </ul>
+    </div>
+
+    <!-- Bloque Permitido -->
+    <div class="p-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60">
+      <h4 class="text-[11px] font-black uppercase text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 mb-1.5">
+        <CheckCircle2 class="w-3.5 h-3.5" />
+        Preguntas Válidas (Personalidad e Historia):
+      </h4>
+      <ul class="text-[11px] text-emerald-900 dark:text-emerald-200/90 space-y-1 font-medium">
+        <li>✨ <em>«¿Canta alguna canción o tiene canción propia?»</em></li>
+        <li>✨ <em>«¿Tiene poderes mágicos, alas o vuela?»</em></li>
+        <li>✨ <em>«¿Tiene un mejor amigo inseparable o mascota?»</em></li>
+        <li>✨ <em>«¿Viaja al espacio, al fondo del mar o a otra época?»</em></li>
+        <li>✨ <em>«¿Es un villano temible o el héroe que salva el día?»</em></li>
+        <li>✨ <em>«¿Tiene una escena donde llora o se enoja mucho?»</em></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Generador de Pregunta Aleatoria -->
+  <div class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 mb-3 flex flex-col gap-1.5">
+    <div class="flex items-center justify-between">
+      <span class="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400">
+        ¿Sin ideas? Prueba esta:
+      </span>
+      <button
+        type="button"
+        id="btn-random-hard-question"
+        class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer flex items-center gap-1"
+      >
+        <Dices class="w-3 h-3" />
+        <span>Otra</span>
+      </button>
+    </div>
+    <p id="hard-question-display" class="text-xs font-bold text-slate-800 dark:text-slate-100 italic">
+      «¿Tu personaje canta una canción en su película?»
+    </p>
+  </div>
+
+  <button
+    type="button"
+    id="btn-understand-hard"
+    class="w-full py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black uppercase tracking-wider border-b-4 border-rose-800 active:border-b-0 active:translate-y-1 transition cursor-pointer shadow-sm text-center"
+  >
+    ¡Acepto el Reto Pro!
+  </button>
+</dialog>
+
+<script>
+  import { sounds } from "../utils/audio";
+
+  const dialog = document.getElementById("dialog-hard-mode") as HTMLDialogElement;
+  const btnClose = document.getElementById("btn-close-hard-mode")!;
+  const btnUnderstand = document.getElementById("btn-understand-hard")!;
+  const btnRandomQ = document.getElementById("btn-random-hard-question")!;
+  const displayQ = document.getElementById("hard-question-display")!;
+
+  const HARD_QUESTIONS = [
+    "«¿Tu personaje canta alguna canción en su película?»",
+    "«¿Tiene poderes mágicos o habilidades sobrehumanas?»",
+    "«¿Tiene un compañero o mascota inseparable?»",
+    "«¿Viaja al espacio, al fondo del mar o a otra época?»",
+    "«¿Tiene una escena donde llora o se conmueve mucho?»",
+    "«¿Es el villano principal o alguien que hace travesuras?»",
+    "«¿Vive con su familia o está lejos de su hogar?»",
+    "«¿Usa alguna máquina, vehículo o tecnología futurista?»",
+    "«¿Ha salvado el mundo o a toda su comunidad?»",
+    "«¿Es famoso por decir alguna frase icónica?»",
+    "«¿Tiene un conflicto o rivalidad con otro personaje?»",
+    "«¿Aparece en más de una película de su saga?»",
+  ];
+
+  function pickRandomQuestion() {
+    const q = HARD_QUESTIONS[Math.floor(Math.random() * HARD_QUESTIONS.length)];
+    displayQ.textContent = q;
+    sounds.playQuestionTick();
+  }
+
+  btnRandomQ.addEventListener("click", pickRandomQuestion);
+
+  window.addEventListener("game:open-hard-mode-info", () => {
+    pickRandomQuestion();
+    dialog.showModal();
+  });
+
+  btnClose.addEventListener("click", () => dialog.close());
+  btnUnderstand.addEventListener("click", () => dialog.close());
+  dialog.addEventListener("click", (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+</script>

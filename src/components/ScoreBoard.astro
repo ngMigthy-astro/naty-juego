@@ -1,6 +1,6 @@
 ---
 // src/components/ScoreBoard.astro
-import { Sparkles, Plus, RotateCcw, Sun, Moon, Users } from "lucide-astro";
+import { Sparkles, Plus, Minus, RotateCcw, Sun, Moon, Users, Crown } from "lucide-astro";
 ---
 
 <header
@@ -53,67 +53,133 @@ import { Sparkles, Plus, RotateCcw, Sun, Moon, Users } from "lucide-astro";
     </div>
   </div>
 
+  <!-- Fila Modo: Modo Normal (Infinito) vs Campeón de Campeones (Copa 5 o 10 pts) -->
+  <div class="flex items-center justify-between px-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 flex-wrap gap-1.5">
+    <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-black">
+      <Crown class="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+      <span>Modo:</span>
+    </div>
+    <div class="flex items-center gap-1">
+      <button
+        type="button"
+        id="btn-mode-free"
+        class="px-2.5 py-0.5 rounded-lg text-[10px] font-black border transition cursor-pointer"
+        title="Modo Normal: Puntos infinitos libres"
+      >
+        ♾️ Infinito
+      </button>
+      <button
+        type="button"
+        id="btn-target-5"
+        class="px-2.5 py-0.5 rounded-lg text-[10px] font-black border transition cursor-pointer"
+        title="Modo Campeón de Campeones: Copa a 5 puntos"
+      >
+        🏆 Copa a 5
+      </button>
+      <button
+        type="button"
+        id="btn-target-10"
+        class="px-2.5 py-0.5 rounded-lg text-[10px] font-black border transition cursor-pointer"
+        title="Modo Campeón de Campeones: Copa a 10 puntos"
+      >
+        🏆 Copa a 10
+      </button>
+    </div>
+  </div>
+
   <!-- Fila Inferior: Marcador en 2 Columnas -->
   <div
     class="grid grid-cols-[1fr_auto_1fr_auto] items-center gap-1.5 sm:gap-2 bg-slate-100 dark:bg-slate-950 p-1.5 sm:p-2 rounded-2xl border-2 border-slate-200 dark:border-slate-800 w-full"
   >
     <!-- Jugador 1 -->
     <div
-      class="flex items-center justify-between bg-white dark:bg-slate-900 px-2 sm:px-3 py-1.5 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 min-w-0"
+      class="relative flex items-center justify-between bg-white dark:bg-slate-900 px-2 sm:px-3 py-1.5 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 min-w-0"
     >
       <span
-        id="display-name-p1"
-        class="text-xs font-black text-indigo-700 dark:text-indigo-400 truncate max-w-[80px] sm:max-w-[120px]"
-      >
-        Naty
-      </span>
-      <div class="flex items-center gap-1.5 shrink-0 ml-1">
+        id="crown-p1"
+        class="hidden absolute -top-2.5 left-2 text-xs select-none pointer-events-none drop-shadow-xs"
+        title="¡Líder de la partida!"
+      >👑</span>
+
+      <div class="flex items-center min-w-0 flex-1 mr-1">
+        <span
+          id="display-name-p1"
+          class="text-xs sm:text-sm font-black text-indigo-700 dark:text-indigo-400 truncate"
+        >
+          Naty
+        </span>
+      </div>
+      <div class="flex items-center gap-0.5 sm:gap-1 shrink-0">
+        <button
+          type="button"
+          id="btn-minus-p1"
+          class="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center justify-center border border-slate-200 dark:border-slate-700 active:translate-y-0.5 transition cursor-pointer"
+          title="Restar 1 punto"
+        >
+          <Minus class="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[3]" />
+        </button>
         <span
           id="score-p1"
-          class="text-base font-black text-slate-900 dark:text-white bg-indigo-50 dark:bg-indigo-950/70 px-1.5 py-0.5 rounded-lg border border-indigo-200 dark:border-indigo-900 leading-none"
+          class="text-sm sm:text-base font-black text-slate-900 dark:text-white bg-indigo-50 dark:bg-indigo-950/70 px-1.5 py-0.5 rounded-lg border border-indigo-200 dark:border-indigo-900 leading-none min-w-[20px] text-center"
         >
           0
         </span>
         <button
           type="button"
           id="btn-plus-p1"
-          class="w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center border-b-2 border-indigo-800 active:border-b-0 active:translate-y-0.5 transition-all cursor-pointer shadow-xs shrink-0"
+          class="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center border-b-2 border-indigo-800 active:border-b-0 active:translate-y-0.5 transition-all cursor-pointer shadow-xs shrink-0"
           title="Sumar 1 punto"
         >
-          <Plus class="w-3.5 h-3.5 stroke-[3]" />
+          <Plus class="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
         </button>
       </div>
     </div>
 
     <span
-      class="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 px-1 select-none text-center"
+      class="text-[9px] sm:text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 px-0.5 select-none text-center"
       >VS</span
     >
 
     <!-- Jugador 2 -->
     <div
-      class="flex items-center justify-between bg-white dark:bg-slate-900 px-2 sm:px-3 py-1.5 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 min-w-0"
+      class="relative flex items-center justify-between bg-white dark:bg-slate-900 px-2 sm:px-3 py-1.5 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 min-w-0"
     >
       <span
-        id="display-name-p2"
-        class="text-xs font-black text-amber-700 dark:text-amber-400 truncate max-w-[80px] sm:max-w-[120px]"
-      >
-        César
-      </span>
-      <div class="flex items-center gap-1.5 shrink-0 ml-1">
+        id="crown-p2"
+        class="hidden absolute -top-2.5 left-2 text-xs select-none pointer-events-none drop-shadow-xs"
+        title="¡Líder de la partida!"
+      >👑</span>
+
+      <div class="flex items-center min-w-0 flex-1 mr-1">
+        <span
+          id="display-name-p2"
+          class="text-xs sm:text-sm font-black text-amber-700 dark:text-amber-400 truncate"
+        >
+          César
+        </span>
+      </div>
+      <div class="flex items-center gap-0.5 sm:gap-1 shrink-0">
+        <button
+          type="button"
+          id="btn-minus-p2"
+          class="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center justify-center border border-slate-200 dark:border-slate-700 active:translate-y-0.5 transition cursor-pointer"
+          title="Restar 1 punto"
+        >
+          <Minus class="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[3]" />
+        </button>
         <span
           id="score-p2"
-          class="text-base font-black text-slate-900 dark:text-white bg-amber-50 dark:bg-amber-950/70 px-1.5 py-0.5 rounded-lg border border-amber-200 dark:border-amber-900 leading-none"
+          class="text-sm sm:text-base font-black text-slate-900 dark:text-white bg-amber-50 dark:bg-amber-950/70 px-1.5 py-0.5 rounded-lg border border-amber-200 dark:border-amber-900 leading-none min-w-[20px] text-center"
         >
           0
         </span>
         <button
           type="button"
           id="btn-plus-p2"
-          class="w-7 h-7 rounded-lg bg-amber-500 hover:bg-amber-400 text-white font-bold text-xs flex items-center justify-center border-b-2 border-amber-700 active:border-b-0 active:translate-y-0.5 transition-all cursor-pointer shadow-xs shrink-0"
+          class="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-lg bg-amber-500 hover:bg-amber-400 text-white font-bold text-xs flex items-center justify-center border-b-2 border-amber-700 active:border-b-0 active:translate-y-0.5 transition-all cursor-pointer shadow-xs shrink-0"
           title="Sumar 1 punto"
         >
-          <Plus class="w-3.5 h-3.5 stroke-[3]" />
+          <Plus class="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
         </button>
       </div>
     </div>
@@ -234,32 +300,53 @@ import { Sparkles, Plus, RotateCcw, Sun, Moon, Users } from "lucide-astro";
 
   const STORAGE_KEY = "juegos_naty_adivina_quien_scores";
 
+  type GameMode = "free" | "champion_5" | "champion_10";
+
   interface ScoreState {
     p1Name: string;
     p2Name: string;
     p1Score: number;
     p2Score: number;
+    mode: GameMode;
   }
 
   function getStoredState(): ScoreState {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
-      if (data) return JSON.parse(data);
+      if (data) {
+        const parsed = JSON.parse(data);
+        return {
+          p1Name: parsed.p1Name || "Naty",
+          p2Name: parsed.p2Name || "César",
+          p1Score: Number(parsed.p1Score) || 0,
+          p2Score: Number(parsed.p2Score) || 0,
+          mode: parsed.mode || "free",
+        };
+      }
     } catch {}
-    // Por defecto ahora es Naty vs César
-    return { p1Name: "Naty", p2Name: "César", p1Score: 0, p2Score: 0 };
+    return { p1Name: "Naty", p2Name: "César", p1Score: 0, p2Score: 0, mode: "free" };
   }
 
   let state = getStoredState();
+  let hasCrownedInThisMatch = false;
 
   const displayNameP1 = document.getElementById("display-name-p1")!;
   const displayNameP2 = document.getElementById("display-name-p2")!;
   const scoreP1 = document.getElementById("score-p1")!;
   const scoreP2 = document.getElementById("score-p2")!;
+  const crownP1 = document.getElementById("crown-p1")!;
+  const crownP2 = document.getElementById("crown-p2")!;
   const btnPlusP1 = document.getElementById("btn-plus-p1")!;
+  const btnMinusP1 = document.getElementById("btn-minus-p1")!;
   const btnPlusP2 = document.getElementById("btn-plus-p2")!;
+  const btnMinusP2 = document.getElementById("btn-minus-p2")!;
   const btnReset = document.getElementById("btn-reset-scores")!;
   const btnTheme = document.getElementById("btn-theme-toggle")!;
+
+  // Botones de Modo
+  const btnModeFree = document.getElementById("btn-mode-free")!;
+  const btnTarget5 = document.getElementById("btn-target-5")!;
+  const btnTarget10 = document.getElementById("btn-target-10")!;
 
   // Modal Jugadores
   const dialogPlayers = document.getElementById(
@@ -285,15 +372,102 @@ import { Sparkles, Plus, RotateCcw, Sun, Moon, Users } from "lucide-astro";
     displayNameP2.textContent = state.p2Name;
     scoreP1.textContent = state.p1Score.toString();
     scoreP2.textContent = state.p2Score.toString();
+
+    // Actualizar botones de modo
+    const inactiveBtnClass =
+      "px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 cursor-pointer";
+
+    btnModeFree.className = inactiveBtnClass;
+    btnTarget5.className = inactiveBtnClass;
+    btnTarget10.className = inactiveBtnClass;
+
+    if (state.mode === "free") {
+      btnModeFree.className =
+        "px-2.5 py-0.5 rounded-lg text-[10px] font-black bg-indigo-600 text-white border-indigo-700 shadow-xs cursor-pointer";
+    } else if (state.mode === "champion_5") {
+      btnTarget5.className =
+        "px-2.5 py-0.5 rounded-lg text-[10px] font-black bg-amber-500 text-white border-amber-600 shadow-xs cursor-pointer";
+    } else if (state.mode === "champion_10") {
+      btnTarget10.className =
+        "px-2.5 py-0.5 rounded-lg text-[10px] font-black bg-amber-500 text-white border-amber-600 shadow-xs cursor-pointer";
+    }
+
+    // Coronas dinámicas para quien va ganando
+    if (state.p1Score > state.p2Score && state.p1Score > 0) {
+      crownP1.classList.remove("hidden");
+      crownP2.classList.add("hidden");
+    } else if (state.p2Score > state.p1Score && state.p2Score > 0) {
+      crownP2.classList.remove("hidden");
+      crownP1.classList.add("hidden");
+    } else {
+      crownP1.classList.add("hidden");
+      crownP2.classList.add("hidden");
+    }
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     window.dispatchEvent(
       new CustomEvent("game:players-updated", { detail: state }),
     );
+
+    // Solo comprobar campeón si estamos en modo copa (5 o 10 puntos)
+    checkChampion();
   }
+
+  function checkChampion() {
+    if (hasCrownedInThisMatch) return;
+    if (state.mode === "free") return; // En modo libre, puntos infinitos
+
+    const target = state.mode === "champion_5" ? 5 : 10;
+
+    if (state.p1Score >= target || state.p2Score >= target) {
+      hasCrownedInThisMatch = true;
+      const isP1Winner = state.p1Score >= target;
+      window.dispatchEvent(
+        new CustomEvent("game:champion-crowned", {
+          detail: {
+            winnerName: isP1Winner ? state.p1Name : state.p2Name,
+            winnerPlayer: isP1Winner ? 1 : 2,
+            p1Score: state.p1Score,
+            p2Score: state.p2Score,
+            p1Name: state.p1Name,
+            p2Name: state.p2Name,
+            target,
+          },
+        }),
+      );
+    }
+  }
+
+  btnModeFree.addEventListener("click", () => {
+    state.mode = "free";
+    sounds.playQuestionTick();
+    hasCrownedInThisMatch = false;
+    syncUI();
+  });
+
+  btnTarget5.addEventListener("click", () => {
+    state.mode = "champion_5";
+    sounds.playQuestionTick();
+    hasCrownedInThisMatch = false;
+    syncUI();
+  });
+
+  btnTarget10.addEventListener("click", () => {
+    state.mode = "champion_10";
+    sounds.playQuestionTick();
+    hasCrownedInThisMatch = false;
+    syncUI();
+  });
 
   btnPlusP1.addEventListener("click", () => {
     state.p1Score += 1;
     sounds.playVictory();
+    syncUI();
+  });
+
+  btnMinusP1.addEventListener("click", () => {
+    state.p1Score = Math.max(0, state.p1Score - 1);
+    sounds.playQuestionTick();
     syncUI();
   });
 
@@ -303,9 +477,16 @@ import { Sparkles, Plus, RotateCcw, Sun, Moon, Users } from "lucide-astro";
     syncUI();
   });
 
+  btnMinusP2.addEventListener("click", () => {
+    state.p2Score = Math.max(0, state.p2Score - 1);
+    sounds.playQuestionTick();
+    syncUI();
+  });
+
   btnReset.addEventListener("click", () => {
     state.p1Score = 0;
     state.p2Score = 0;
+    hasCrownedInThisMatch = false;
     syncUI();
   });
 
@@ -340,6 +521,7 @@ import { Sparkles, Plus, RotateCcw, Sun, Moon, Users } from "lucide-astro";
     if (checkResetPoints.checked) {
       state.p1Score = 0;
       state.p2Score = 0;
+      hasCrownedInThisMatch = false;
     }
     syncUI();
     dialogPlayers.close();
@@ -354,10 +536,24 @@ import { Sparkles, Plus, RotateCcw, Sun, Moon, Users } from "lucide-astro";
   });
 
   window.addEventListener("game:add-point", ((e: CustomEvent) => {
-    if (e.detail?.player === 1) state.p1Score += 1;
-    if (e.detail?.player === 2) state.p2Score += 1;
+    const points = Number(e.detail?.points) || 1;
+    if (e.detail?.player === 1) state.p1Score += points;
+    if (e.detail?.player === 2) state.p2Score += points;
     syncUI();
   }) as EventListener);
+
+  window.addEventListener("game:reset-scores", () => {
+    state.p1Score = 0;
+    state.p2Score = 0;
+    hasCrownedInThisMatch = false;
+    syncUI();
+  });
+
+  window.addEventListener("game:switch-mode-free", () => {
+    state.mode = "free";
+    hasCrownedInThisMatch = false;
+    syncUI();
+  });
 
   syncUI();
 </script>

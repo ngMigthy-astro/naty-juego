@@ -1,0 +1,124 @@
+---
+// src/components/ChampionModal.astro
+import { Trophy, Crown, RotateCcw, Sparkles } from "lucide-astro";
+---
+
+<dialog
+  id="dialog-champion"
+  class="p-5 sm:p-7 rounded-3xl backdrop:bg-slate-950/85 backdrop:backdrop-blur-sm max-w-sm sm:max-w-md w-full border-4 border-amber-400 dark:border-amber-500 bg-white dark:bg-slate-900 shadow-2xl m-auto text-center transition-colors overflow-hidden"
+>
+  <div class="flex flex-col items-center gap-3">
+    <!-- Icono Corona + Trofeo -->
+    <div class="relative flex items-center justify-center">
+      <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-amber-100 dark:bg-amber-950/60 border-2 border-amber-300 dark:border-amber-700 flex items-center justify-center shadow-lg shadow-amber-500/20">
+        <Trophy class="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 stroke-[2.2]" />
+      </div>
+      <div class="absolute -top-3 -right-2 bg-amber-500 text-white p-1.5 rounded-full shadow-md animate-bounce">
+        <Crown class="w-5 h-5 fill-white text-white" />
+      </div>
+    </div>
+
+    <!-- Títulos -->
+    <div>
+      <span class="text-[11px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">
+        Copa Disney & Pixar
+      </span>
+      <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-0.5">
+        ¡CAMPEÓN DE CAMPEONES!
+      </h2>
+    </div>
+
+    <!-- Ganador Destacado -->
+    <div class="w-full bg-linear-to-r from-amber-500/10 via-amber-500/20 to-amber-500/10 p-4 rounded-2xl border-2 border-dashed border-amber-300 dark:border-amber-700/80">
+      <p class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-0.5">
+        Gran Victoria para:
+      </p>
+      <h3 id="champion-winner-name" class="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
+        Naty
+      </h3>
+      <div class="mt-2 text-xs font-black text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-950 py-1 px-3 rounded-full inline-block border border-slate-200 dark:border-slate-800">
+        Marcador Final: <span id="champion-final-score">3 - 1</span>
+      </div>
+    </div>
+
+    <p class="text-xs font-medium text-slate-500 dark:text-slate-400">
+      ¡Una partida legendaria! ¿Listos para la revancha?
+    </p>
+
+    <!-- Botones de Acción -->
+    <div class="flex flex-col gap-2 w-full mt-1">
+      <button
+        type="button"
+        id="btn-champion-new-match"
+        class="w-full py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-white font-black text-xs sm:text-sm uppercase tracking-wider border-b-4 border-amber-700 active:border-b-0 active:translate-y-1 transition cursor-pointer shadow-md shadow-amber-500/20 flex items-center justify-center gap-2"
+      >
+        <RotateCcw class="w-4 h-4" />
+        <span>Nueva Partida (Marcador 0 - 0)</span>
+      </button>
+
+      <button
+        type="button"
+        id="btn-champion-switch-free"
+        class="w-full py-2.5 px-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 font-bold text-xs transition cursor-pointer border border-indigo-200 dark:border-indigo-800"
+      >
+        ♾️ Cambiar a Modo Infinito (puntos libres)
+      </button>
+
+      <button
+        type="button"
+        id="btn-champion-continue"
+        class="w-full py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs transition cursor-pointer"
+      >
+        Seguir jugando sin reiniciar
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  import { sounds } from "../utils/audio";
+  import { launchConfetti } from "../utils/confetti";
+
+  const dialog = document.getElementById("dialog-champion") as HTMLDialogElement;
+  const winnerNameEl = document.getElementById("champion-winner-name")!;
+  const finalScoreEl = document.getElementById("champion-final-score")!;
+  const btnNewMatch = document.getElementById("btn-champion-new-match")!;
+  const btnContinue = document.getElementById("btn-champion-continue")!;
+
+  const btnSwitchFree = document.getElementById("btn-champion-switch-free")!;
+
+  window.addEventListener("game:champion-crowned", ((e: CustomEvent) => {
+    const detail = e.detail;
+    if (!detail) return;
+
+    winnerNameEl.textContent = `👑 ¡${detail.winnerName}! 👑`;
+    finalScoreEl.textContent = `${detail.p1Name} ${detail.p1Score} - ${detail.p2Score} ${detail.p2Name}`;
+
+    sounds.playChampionFanfare();
+    launchConfetti();
+    setTimeout(() => launchConfetti(), 400);
+    setTimeout(() => launchConfetti(), 900);
+
+    dialog.showModal();
+  }) as EventListener);
+
+  btnNewMatch.addEventListener("click", () => {
+    dialog.close();
+    window.dispatchEvent(new CustomEvent("game:reset-scores"));
+    window.dispatchEvent(new CustomEvent("game:request-new-round"));
+  });
+
+  btnSwitchFree.addEventListener("click", () => {
+    dialog.close();
+    window.dispatchEvent(new CustomEvent("game:switch-mode-free"));
+    window.dispatchEvent(new CustomEvent("game:request-new-round"));
+  });
+
+  btnContinue.addEventListener("click", () => {
+    dialog.close();
+  });
+
+  dialog.addEventListener("click", (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+</script>
