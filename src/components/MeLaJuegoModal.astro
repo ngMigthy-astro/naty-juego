@@ -23,7 +23,7 @@ import { Zap, Trophy, X, ShieldAlert, Check } from "lucide-astro";
   </div>
 
   <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3 text-left">
-    Tiro a ciegas: Si adivinas al personaje ganas <strong class="text-amber-600 dark:text-amber-400 font-black">+3 PUNTOS</strong>. Si fallas, <strong>¡el punto se lo regalas a tu rival!</strong>
+    Tiro de riesgo (tras 1ª pregunta): Si adivinas al personaje ganas <strong class="text-amber-600 dark:text-amber-400 font-black">+3 PUNTOS</strong>. Si fallas, <strong>¡le regalas +2 PUNTOS a tu rival!</strong>
   </p>
 
   <!-- Paso 1: ¿Quién se la juega? -->
@@ -114,7 +114,7 @@ import { Zap, Trophy, X, ShieldAlert, Check } from "lucide-astro";
         id="btn-manual-fail"
         class="py-2.5 px-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black border-b-4 border-rose-800 active:border-b-0 active:translate-y-1 transition cursor-pointer"
       >
-        💥 No, falló
+        💥 No, falló (+2 Rival)
       </button>
     </div>
   </div>
@@ -306,11 +306,11 @@ import { Zap, Trophy, X, ShieldAlert, Check } from "lucide-astro";
     resultIcon.textContent = "💥";
     resultTitle.textContent = "¡FALLASTE EL TIRO!";
     resultDesc.textContent = actualName
-      ? `El personaje era ${actualName}. ¡Punto directo para ${rivalName}!`
-      : `No era ese personaje. ¡Punto directo para ${rivalName}!`;
+      ? `El personaje era ${actualName}. ¡+2 PUNTOS para ${rivalName}!`
+      : `No era ese personaje. ¡+2 PUNTOS para ${rivalName}!`;
 
     window.dispatchEvent(
-      new CustomEvent("game:add-point", { detail: { player: rivalPlayer } }),
+      new CustomEvent("game:add-point", { detail: { player: rivalPlayer, points: 2 } }),
     );
 
     showResult();

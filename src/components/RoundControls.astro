@@ -100,17 +100,17 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
 
   <!-- Fila 3: Botones Especiales (¡Me la juego! + Personaje Secreto) -->
   <div class="grid grid-cols-2 gap-2 w-full">
-    <!-- Botón ¡Me la juego! (Habilitado solo con 1 pregunta o menos) -->
+    <!-- Botón ¡Me la juego! (Habilitado solo tras hacer la 1ª pregunta) -->
     <button
       type="button"
       id="btn-open-mela-juego"
-      class="py-2 px-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-white font-black text-xs border-2 border-amber-600 border-b-4 border-b-amber-700 active:border-b-2 active:translate-y-[2px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs truncate"
-      title="Tiro a ciegas: solo disponible con 1 pregunta o menos"
+      class="py-2 px-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold text-xs border-2 border-slate-200 dark:border-slate-700 border-b-4 border-b-slate-300 dark:border-b-slate-700 opacity-60 flex items-center justify-center gap-1.5 transition-all cursor-not-allowed shadow-none truncate"
+      title="Tiro de riesgo: disponible únicamente tras completar el 1º turno"
     >
       <Zap class="w-3.5 h-3.5 text-amber-200 shrink-0" />
       <span class="truncate">¡Me la juego!</span>
-      <span id="badge-mela-juego" class="text-[9px] bg-amber-700/80 text-amber-100 px-1.5 py-0.2 rounded-full font-bold shrink-0">
-        Activo
+      <span id="badge-mela-juego" class="text-[9px] bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1.5 py-0.2 rounded-full font-bold shrink-0">
+        Tras 1ª Preg
       </span>
     </button>
 
@@ -221,27 +221,28 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
   });
 
   function updateGameState() {
-    const activeQuestions = document.querySelectorAll(".q-pill.q-active").length;
-    const isAvailable = activeQuestions <= 1;
+    const q1Active = pillQ1.classList.contains("q-active");
+    const q2Active = pillQ2.classList.contains("q-active");
+    const activeQuestions = (q1Active ? 1 : 0) + (q2Active ? 1 : 0);
+    // Camino B: Disponible ÚNICAMENTE con exactamente 1 pregunta hecha
+    const isAvailable = activeQuestions === 1;
 
     btnMelaJuego.disabled = !isAvailable;
 
     if (isAvailable) {
       btnMelaJuego.className =
-        "py-2 px-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-white font-black text-xs border-2 border-amber-600 border-b-4 border-b-amber-700 active:border-b-2 active:translate-y-[2px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs truncate";
-      badgeMelaJuego.textContent = activeQuestions === 0 ? "Tiro libre" : "Última chance";
+        "py-2 px-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-white font-black text-xs border-2 border-amber-600 border-b-4 border-b-amber-700 active:border-b-2 active:translate-y-[2px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-amber-500/20 animate-pulse truncate";
+      badgeMelaJuego.textContent = "¡Activo! (+3 Pts)";
       badgeMelaJuego.className =
         "text-[9px] bg-amber-700/80 text-amber-100 px-1.5 py-0.2 rounded-full font-bold shrink-0";
     } else {
       btnMelaJuego.className =
         "py-2 px-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold text-xs border-2 border-slate-200 dark:border-slate-700 border-b-4 border-b-slate-300 dark:border-b-slate-700 opacity-60 flex items-center justify-center gap-1.5 transition-all cursor-not-allowed shadow-none truncate";
-      badgeMelaJuego.textContent = "Bloqueado (+1 preg)";
+      badgeMelaJuego.textContent = activeQuestions === 0 ? "Tras 1ª Preg" : "Bloqueado";
       badgeMelaJuego.className =
         "text-[9px] bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1.5 py-0.2 rounded-full font-bold shrink-0";
     }
 
-    const q1Active = pillQ1.classList.contains("q-active");
-    const q2Active = pillQ2.classList.contains("q-active");
     const isGuessMode = Boolean(q1Active && q2Active);
 
     window.dispatchEvent(
@@ -346,8 +347,10 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
       window.dispatchEvent(new CustomEvent("game:open-secret"));
       return;
     }
-    const activeQuestions = document.querySelectorAll(".q-pill.q-active").length;
-    if (activeQuestions <= 1) {
+    const q1Active = pillQ1.classList.contains("q-active");
+    const q2Active = pillQ2.classList.contains("q-active");
+    const activeQuestions = (q1Active ? 1 : 0) + (q2Active ? 1 : 0);
+    if (activeQuestions === 1) {
       sounds.playQuestionTick();
       window.dispatchEvent(new CustomEvent("game:open-mela-juego"));
     }
