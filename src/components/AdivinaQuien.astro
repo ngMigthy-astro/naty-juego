@@ -5,7 +5,6 @@ import RoundControls from "./RoundControls.astro";
 import SecretModal from "./SecretModal.astro";
 import MeLaJuegoModal from "./MeLaJuegoModal.astro";
 import ChampionModal from "./ChampionModal.astro";
-import HardModeModal from "./HardModeModal.astro";
 import WinControls from "./WinControls.astro";
 ---
 
@@ -15,7 +14,7 @@ import WinControls from "./WinControls.astro";
   <!-- Marcador Responsive con Campeón de Campeones -->
   <ScoreBoard />
 
-  <!-- Controles Responsive con ¡Me la juego!, 2 Turnos y Modo Hard -->
+  <!-- Controles Responsive con ¡Me la juego! y 2 Turnos -->
   <RoundControls />
 
   <!-- Diálogo accesible secreto con Selector de Naty y Alarma Espía -->
@@ -26,9 +25,6 @@ import WinControls from "./WinControls.astro";
 
   <!-- Diálogo Campeón de Campeones -->
   <ChampionModal />
-
-  <!-- Diálogo Modo Hard (Reglas Prohibidas) -->
-  <HardModeModal />
 
   <!-- Banner Dinámico: ¡DEBES ADIVINAR AHORA ${NOMBRE_JUGADOR}! -->
   <div

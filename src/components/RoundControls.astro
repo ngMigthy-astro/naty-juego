@@ -1,6 +1,6 @@
 ---
 // src/components/RoundControls.astro
-import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
+import { Dices, RotateCcw, Eye, X, Zap } from "lucide-astro";
 ---
 
 <section
@@ -45,9 +45,9 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
     </button>
   </div>
 
-  <!-- Fila 2: Solo 2 Turnos de Preguntas (Auto o Manual) + Modo Hard -->
-  <div class="flex items-center justify-between gap-1.5 w-full bg-slate-50 dark:bg-slate-950/50 p-2 rounded-2xl border border-slate-200/80 dark:border-slate-800 flex-wrap sm:flex-nowrap">
-    <div class="flex items-center gap-1.5">
+  <!-- Fila 2: Solo 2 Turnos de Preguntas (Manual) -->
+  <div class="flex items-center justify-between gap-1.5 w-full bg-slate-50 dark:bg-slate-950/50 p-2 rounded-2xl border border-slate-200/80 dark:border-slate-800">
+    <div class="flex items-center gap-1.5 flex-1">
       <span
         class="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 select-none"
       >
@@ -58,7 +58,7 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
         id="pill-q-1"
         class="q-pill px-2.5 py-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 border-b-4 active:border-b-2 active:translate-y-[2px] bg-white dark:bg-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 transition-all cursor-pointer flex items-center gap-1 shadow-xs"
         data-q="1"
-        title="1ª Pregunta (se auto-marca tras descartar o toca para marcar)"
+        title="1ª Pregunta (toca para marcar turno)"
       >
         <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 q-dot"></span>
         <span>1º Turno</span>
@@ -68,7 +68,7 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
         id="pill-q-2"
         class="q-pill px-2.5 py-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 border-b-4 active:border-b-2 active:translate-y-[2px] bg-white dark:bg-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 transition-all cursor-pointer flex items-center gap-1 shadow-xs"
         data-q="2"
-        title="2ª Pregunta (se auto-marca tras descartar o toca para marcar)"
+        title="2ª Pregunta (toca para marcar turno)"
       >
         <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 q-dot"></span>
         <span>2º Turno</span>
@@ -82,20 +82,6 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
         <X class="w-3.5 h-3.5" />
       </button>
     </div>
-
-    <!-- Toggle Modo Hard -->
-    <button
-      type="button"
-      id="btn-toggle-hard-mode"
-      class="py-1 px-2.5 rounded-xl text-[10px] font-black border transition cursor-pointer flex items-center gap-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 border-b-2"
-      title="Alternar Modo Hard (Ver lista de prohibiciones)"
-    >
-      <Flame class="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
-      <span>Modo Hard</span>
-      <span id="badge-hard-mode" class="text-[8px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.2 rounded-full font-bold">
-        OFF
-      </span>
-    </button>
   </div>
 
   <!-- Fila 3: Botones Especiales (¡Me la juego! + Personaje Secreto) -->
@@ -189,35 +175,6 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
     keeperPlayer = guesserPlayer;
     guesserPlayer = prev;
     syncRolesUI();
-  });
-
-  // Modo Hard
-  const btnHardMode = document.getElementById("btn-toggle-hard-mode")!;
-  const badgeHardMode = document.getElementById("badge-hard-mode")!;
-  let isHardModeActive = localStorage.getItem("juegos_naty_hard_mode") === "true";
-
-  function syncHardModeUI() {
-    if (isHardModeActive) {
-      btnHardMode.className =
-        "py-1 px-2.5 rounded-xl text-[10px] font-black border transition cursor-pointer flex items-center gap-1 bg-rose-500 text-white border-rose-600 border-b-2 shadow-xs";
-      badgeHardMode.textContent = "ON";
-      badgeHardMode.className = "text-[8px] bg-rose-700 text-rose-100 px-1.5 py-0.2 rounded-full font-bold";
-    } else {
-      btnHardMode.className =
-        "py-1 px-2.5 rounded-xl text-[10px] font-black border transition cursor-pointer flex items-center gap-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 border-b-2";
-      badgeHardMode.textContent = "OFF";
-      badgeHardMode.className = "text-[8px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.2 rounded-full font-bold";
-    }
-  }
-
-  btnHardMode.addEventListener("click", () => {
-    isHardModeActive = !isHardModeActive;
-    localStorage.setItem("juegos_naty_hard_mode", isHardModeActive ? "true" : "false");
-    syncHardModeUI();
-    sounds.playQuestionTick();
-    if (isHardModeActive) {
-      window.dispatchEvent(new CustomEvent("game:open-hard-mode-info"));
-    }
   });
 
   function updateGameState() {
@@ -378,6 +335,5 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
   }) as EventListener);
 
   updateGameState();
-  syncHardModeUI();
   syncRolesUI();
 </script>
