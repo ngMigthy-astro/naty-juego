@@ -109,44 +109,50 @@ import WinControls from "./WinControls.astro";
     </div>
   </dialog>
 
-  <!-- Modal Confirmación Manual si jugaron con personaje mental -->
+  <!-- Modal Derrota: Falló la Adivinanza Directa -->
   <dialog
-    id="dialog-manual-guess-confirm"
-    class="p-4 sm:p-6 rounded-3xl backdrop:bg-slate-950/80 backdrop:backdrop-blur-xs max-w-sm w-full border-2 border-indigo-500 bg-white dark:bg-slate-900 shadow-2xl m-auto text-center transition-colors overflow-hidden"
+    id="dialog-guess-fail"
+    class="p-4 sm:p-6 rounded-3xl backdrop:bg-slate-950/80 backdrop:backdrop-blur-xs max-w-sm w-full border-2 border-rose-500 bg-white dark:bg-slate-900 shadow-2xl m-auto text-center transition-colors overflow-hidden"
   >
     <div class="flex flex-col items-center gap-3">
-      <div class="w-20 h-20 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700 shadow-sm">
-        <img id="manual-guess-img" src="" alt="" class="w-full h-full object-contain" />
-      </div>
+      <div class="text-4xl animate-bounce">💥</div>
 
       <div>
-        <span class="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-          Adivinanza Directa
+        <span class="text-[10px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400">
+          ¡Adivinanza Fallida! Ronda Perdida
         </span>
-        <h3 id="manual-guess-name" class="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-          Woody
+        <h3 class="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-0.5">
+          No era <span id="guess-fail-picked-name" class="text-rose-600 dark:text-rose-400">...</span>
         </h3>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          ¿Tu rival confirma que su personaje era <strong id="manual-guess-char-strong">...</strong>?
+      </div>
+
+      <!-- Revelar el secreto real -->
+      <div class="w-full bg-slate-50 dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col items-center gap-1.5">
+        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+          El personaje secreto era:
+        </span>
+        <div class="w-20 h-20 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 p-1 border border-slate-200 dark:border-slate-700 shadow-xs">
+          <img id="guess-fail-secret-img" src="" alt="" class="w-full h-full object-contain" />
+        </div>
+        <h4 id="guess-fail-secret-name" class="text-sm font-black text-slate-900 dark:text-white">
+          ...
+        </h4>
+        <p id="guess-fail-secret-meta" class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+          ...
         </p>
       </div>
 
-      <div class="grid grid-cols-2 gap-2 w-full mt-1">
-        <button
-          type="button"
-          id="btn-manual-guess-fail"
-          class="py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition cursor-pointer"
-        >
-          💥 No, falló
-        </button>
-        <button
-          type="button"
-          id="btn-manual-guess-ok"
-          class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 transition cursor-pointer shadow-md shadow-emerald-500/20"
-        >
-          🎉 ¡Sí, le atinó! (+1 Pt)
-        </button>
-      </div>
+      <p id="guess-fail-winner-desc" class="text-xs font-bold text-amber-600 dark:text-amber-400">
+        ¡Punto para César! 🏆 (+1 punto)
+      </p>
+
+      <button
+        type="button"
+        id="btn-guess-fail-next-round"
+        class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black uppercase tracking-wider border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1 transition cursor-pointer shadow-sm"
+      >
+        Siguiente Turno / Ronda ➔
+      </button>
     </div>
   </dialog>
 </div>
@@ -183,13 +189,14 @@ import WinControls from "./WinControls.astro";
   const guessSuccessDesc = document.getElementById("guess-success-desc")!;
   const btnSuccessNextRound = document.getElementById("btn-guess-success-next-round")!;
 
-  // Dialog Confirmación Manual
-  const dialogManual = document.getElementById("dialog-manual-guess-confirm") as HTMLDialogElement;
-  const manualImg = document.getElementById("manual-guess-img") as HTMLImageElement;
-  const manualName = document.getElementById("manual-guess-name")!;
-  const manualStrong = document.getElementById("manual-guess-char-strong")!;
-  const btnManualFail = document.getElementById("btn-manual-guess-fail")!;
-  const btnManualOk = document.getElementById("btn-manual-guess-ok")!;
+  // Dialog Derrota en Adivinanza Directa
+  const dialogFail = document.getElementById("dialog-guess-fail") as HTMLDialogElement;
+  const guessFailPickedName = document.getElementById("guess-fail-picked-name")!;
+  const guessFailSecretImg = document.getElementById("guess-fail-secret-img") as HTMLImageElement;
+  const guessFailSecretName = document.getElementById("guess-fail-secret-name")!;
+  const guessFailSecretMeta = document.getElementById("guess-fail-secret-meta")!;
+  const guessFailWinnerDesc = document.getElementById("guess-fail-winner-desc")!;
+  const btnFailNextRound = document.getElementById("btn-guess-fail-next-round")!;
 
   function syncGuesserToggleUI() {
     const currentName = activeGuesser === 1 ? p1Name : p2Name;
@@ -295,83 +302,62 @@ import WinControls from "./WinControls.astro";
     `;
 
     btn.addEventListener("click", () => {
+      // Todo depende del secreto: si no han elegido, abre el modal
+      if (!registeredSecret) {
+        sounds.playSecretAlert();
+        window.dispatchEvent(new CustomEvent("game:open-secret"));
+        return;
+      }
+
       if (isGuessModeActive) {
-        // MODO ADIVINANZA: Tap directo sobre la carta
-        if (registeredSecret) {
-          if (registeredSecret.id === char.id) {
-            // ¡LE ATINÓ AL PERSONAJE SECRETO!
-            sounds.playVictory();
-            launchConfetti();
-            setTimeout(() => launchConfetti(), 400);
+        // MODO ADIVINANZA DIRECTA (3º acto tras los 2 turnos marcados)
+        const guesserName = activeGuesser === 1 ? p1Name : p2Name;
+        const keeperPlayer = activeGuesser === 1 ? 2 : 1;
+        const keeperName = keeperPlayer === 1 ? p1Name : p2Name;
 
-            window.dispatchEvent(
-              new CustomEvent("game:add-point", {
-                detail: { player: activeGuesser, points: 1 },
-              }),
-            );
+        if (registeredSecret.id === char.id) {
+          // ¡LE ATINÓ AL PERSONAJE SECRETO!
+          sounds.playVictory();
+          launchConfetti();
+          setTimeout(() => launchConfetti(), 400);
 
-            const winnerName = activeGuesser === 1 ? p1Name : p2Name;
-            guessSuccessImg.src = char.imageUrl;
-            guessSuccessName.textContent = char.name;
-            guessSuccessDesc.textContent = `¡${winnerName} adivinó el personaje secreto! Ganó 1 punto.`;
-            dialogSuccess.showModal();
-          } else {
-            // FALLÓ EL TIRO
-            sounds.playFail();
-            btn.dataset.discarded = "true";
-            bannerGuessSubtitle.textContent = `💥 ¡No era ${char.name}! Prueba con otra carta...`;
-          }
+          window.dispatchEvent(
+            new CustomEvent("game:add-point", {
+              detail: { player: activeGuesser, points: 1 },
+            }),
+          );
+
+          guessSuccessImg.src = char.imageUrl;
+          guessSuccessName.textContent = char.name;
+          guessSuccessDesc.textContent = `¡${guesserName} adivinó el personaje secreto! Ganó 1 punto 🏆`;
+          dialogSuccess.showModal();
         } else {
-          // Si jugaron de memoria sin secreto en la app, abre confirmación
-          pendingChar = char;
-          pendingBtn = btn;
-          manualImg.src = char.imageUrl;
-          manualName.textContent = char.name;
-          manualStrong.textContent = char.name;
-          dialogManual.showModal();
-          sounds.playQuestionTick();
+          // FALLÓ LA ADIVINANZA: PIERDE LA RONDA Y PUNTO PARA EL RIVAL
+          sounds.playFail();
+
+          window.dispatchEvent(
+            new CustomEvent("game:add-point", {
+              detail: { player: keeperPlayer, points: 1 },
+            }),
+          );
+
+          guessFailPickedName.textContent = char.name;
+          guessFailSecretImg.src = registeredSecret.imageUrl;
+          guessFailSecretName.textContent = registeredSecret.name;
+          guessFailSecretMeta.textContent = `${registeredSecret.studio} · ${registeredSecret.movie}`;
+          guessFailWinnerDesc.textContent = `¡${guesserName} falló! Punto para ${keeperName} 🏆 (+1 punto)`;
+          dialogFail.showModal();
         }
       } else {
-        // MODO NORMAL: Volteo / descarte de carta
+        // MODO NORMAL: Volteo / descarte manual de carta
         sounds.playFlip();
         const isDiscarded = btn.dataset.discarded === "true";
         btn.dataset.discarded = isDiscarded ? "false" : "true";
-
-        // Notifica actividad para el temporizador automático de turnos
-        window.dispatchEvent(new CustomEvent("game:card-flipped"));
       }
     });
 
     return btn;
   }
-
-  // Confirmación manual si jugaron con memoria
-  btnManualOk.addEventListener("click", () => {
-    dialogManual.close();
-    sounds.playVictory();
-    launchConfetti();
-    setTimeout(() => launchConfetti(), 400);
-    window.dispatchEvent(
-      new CustomEvent("game:add-point", { detail: { player: activeGuesser, points: 1 } }),
-    );
-    if (pendingChar) {
-      const winnerName = activeGuesser === 1 ? p1Name : p2Name;
-      guessSuccessImg.src = pendingChar.imageUrl;
-      guessSuccessName.textContent = pendingChar.name;
-      guessSuccessDesc.textContent = `¡${winnerName} adivinó el personaje secreto! Ganó 1 punto.`;
-      dialogSuccess.showModal();
-    }
-  });
-
-  btnManualFail.addEventListener("click", () => {
-    dialogManual.close();
-    sounds.playFail();
-    if (pendingBtn) pendingBtn.dataset.discarded = "true";
-  });
-
-  dialogManual.addEventListener("click", (e) => {
-    if (e.target === dialogManual) dialogManual.close();
-  });
 
   btnSuccessNextRound.addEventListener("click", () => {
     dialogSuccess.close();
@@ -380,6 +366,15 @@ import WinControls from "./WinControls.astro";
 
   dialogSuccess.addEventListener("click", (e) => {
     if (e.target === dialogSuccess) dialogSuccess.close();
+  });
+
+  btnFailNextRound.addEventListener("click", () => {
+    dialogFail.close();
+    window.dispatchEvent(new CustomEvent("game:request-new-round"));
+  });
+
+  dialogFail.addEventListener("click", (e) => {
+    if (e.target === dialogFail) dialogFail.close();
   });
 
   function loadNewRound() {
@@ -411,7 +406,7 @@ import WinControls from "./WinControls.astro";
     }
     if (isGuessModeActive) {
       bannerGuessSubtitle.textContent =
-        "Toca directamente la carta de tu personaje para ganar la ronda";
+        "🎯 Toca la carta de tu sospechoso. ¡Si aciertas ganas +1 pt, pero si fallas el punto es para tu rival!";
       bannerGuessMode.classList.remove("hidden");
       bannerGuessMode.classList.add("flex");
       sounds.playQuestionTick();
@@ -444,7 +439,9 @@ import WinControls from "./WinControls.astro";
     syncGuesserToggleUI();
   }) as EventListener);
 
-  loadNewRound();
-  syncGuesserToggleUI();
-  window.dispatchEvent(new CustomEvent("game:request-sync-roles"));
+  setTimeout(() => {
+    loadNewRound();
+    syncGuesserToggleUI();
+    window.dispatchEvent(new CustomEvent("game:request-sync-roles"));
+  }, 60);
 </script>

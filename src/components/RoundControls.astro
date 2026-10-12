@@ -81,14 +81,6 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
       >
         <X class="w-3.5 h-3.5" />
       </button>
-
-      <!-- Badge de Cuenta Regresiva Automática -->
-      <span
-        id="auto-turn-timer"
-        class="hidden text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800 animate-pulse"
-      >
-        Auto...
-      </span>
     </div>
 
     <!-- Toggle Modo Hard -->
@@ -126,10 +118,10 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
     <button
       type="button"
       id="btn-open-secret-modal"
-      class="py-2 px-2.5 rounded-2xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-black text-xs border-2 border-indigo-200 dark:border-indigo-800 border-b-4 active:border-b-2 active:translate-y-[2px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs truncate"
+      class="py-2 px-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-white font-black text-xs border-2 border-amber-600 border-b-4 border-b-amber-700 active:border-b-2 active:translate-y-[2px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-amber-500/20 animate-pulse truncate"
     >
-      <Eye class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-      <span id="label-secret-btn" class="truncate">Personaje Secreto</span>
+      <Eye class="w-3.5 h-3.5 text-white shrink-0" />
+      <span id="label-secret-btn" class="truncate">⚠️ Elegir Secreto</span>
     </button>
   </div>
 </section>
@@ -139,14 +131,13 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
 
   const btnNewRound = document.getElementById("btn-trigger-new-round")!;
   const btnResetFlips = document.getElementById("btn-trigger-reset-flips")!;
-  const btnOpenSecret = document.getElementById("btn-open-secret-modal")!;
+  const btnOpenSecret = document.getElementById("btn-open-secret-modal") as HTMLButtonElement;
   const labelSecretBtn = document.getElementById("label-secret-btn")!;
   const btnMelaJuego = document.getElementById("btn-open-mela-juego") as HTMLButtonElement;
   const badgeMelaJuego = document.getElementById("badge-mela-juego")!;
   const pillQ1 = document.getElementById("pill-q-1") as HTMLButtonElement;
   const pillQ2 = document.getElementById("pill-q-2") as HTMLButtonElement;
   const btnResetQ = document.getElementById("btn-reset-q")!;
-  const autoTurnTimer = document.getElementById("auto-turn-timer")!;
 
   // Roles de la ronda (quién esconde y quién adivina)
   const roleKeeperName = document.getElementById("role-keeper-name")!;
@@ -157,6 +148,20 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
   let p2Name = "César";
   let keeperPlayer: 1 | 2 = 1; // Por defecto Naty esconde primero
   let guesserPlayer: 1 | 2 = 2; // César adivina primero
+  let hasSecretChosen = false;
+
+  function syncSecretBtnState() {
+    const kName = keeperPlayer === 1 ? p1Name : p2Name;
+    if (!hasSecretChosen) {
+      btnOpenSecret.className =
+        "py-2 px-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-white font-black text-xs border-2 border-amber-600 border-b-4 border-b-amber-700 active:border-b-2 active:translate-y-[2px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-amber-500/20 animate-pulse truncate";
+      labelSecretBtn.textContent = `⚠️ Elegir Secreto (${kName})`;
+    } else {
+      btnOpenSecret.className =
+        "py-2 px-2.5 rounded-2xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-black text-xs border-2 border-indigo-200 dark:border-indigo-800 border-b-4 active:border-b-2 active:translate-y-[2px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs truncate";
+      labelSecretBtn.textContent = `👁️ Secreto de ${kName}`;
+    }
+  }
 
   function syncRolesUI() {
     const kName = keeperPlayer === 1 ? p1Name : p2Name;
@@ -164,7 +169,7 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
 
     roleKeeperName.textContent = kName;
     roleGuesserName.textContent = gName;
-    labelSecretBtn.textContent = `Secreto de ${kName}`;
+    syncSecretBtnState();
 
     window.dispatchEvent(
       new CustomEvent("game:roles-changed", {
@@ -190,57 +195,6 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
   const btnHardMode = document.getElementById("btn-toggle-hard-mode")!;
   const badgeHardMode = document.getElementById("badge-hard-mode")!;
   let isHardModeActive = localStorage.getItem("juegos_naty_hard_mode") === "true";
-
-  // Temporizador de auto-marcado
-  let autoMarkTimeout: ReturnType<typeof setTimeout> | null = null;
-  let countdownInterval: ReturnType<typeof setInterval> | null = null;
-  let secondsRemaining = 3;
-
-  function clearAutoTimer() {
-    if (autoMarkTimeout) {
-      clearTimeout(autoMarkTimeout);
-      autoMarkTimeout = null;
-    }
-    if (countdownInterval) {
-      clearInterval(countdownInterval);
-      countdownInterval = null;
-    }
-    autoTurnTimer.classList.add("hidden");
-  }
-
-  function handleCardFlipActivity() {
-    const q1Active = pillQ1.classList.contains("q-active");
-    const q2Active = pillQ2.classList.contains("q-active");
-
-    if (q1Active && q2Active) return;
-
-    clearAutoTimer();
-    secondsRemaining = 3;
-    const targetLabel = !q1Active ? "1º Turno" : "2º Turno";
-    autoTurnTimer.textContent = `${targetLabel} en ${secondsRemaining}s...`;
-    autoTurnTimer.classList.remove("hidden");
-
-    countdownInterval = setInterval(() => {
-      secondsRemaining -= 1;
-      if (secondsRemaining > 0) {
-        autoTurnTimer.textContent = `${targetLabel} en ${secondsRemaining}s...`;
-      } else {
-        if (countdownInterval) clearInterval(countdownInterval);
-      }
-    }, 1000);
-
-    autoMarkTimeout = setTimeout(() => {
-      clearAutoTimer();
-      if (!q1Active) {
-        setQuestionState(pillQ1, true);
-      } else if (!q2Active) {
-        setQuestionState(pillQ2, true);
-      }
-      sounds.playQuestionTick();
-    }, 3200);
-  }
-
-  window.addEventListener("game:card-flipped", handleCardFlipActivity);
 
   function syncHardModeUI() {
     if (isHardModeActive) {
@@ -341,7 +295,11 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
 
   [pillQ1, pillQ2].forEach((pill) => {
     pill.addEventListener("click", () => {
-      clearAutoTimer();
+      if (!hasSecretChosen) {
+        sounds.playSecretAlert();
+        window.dispatchEvent(new CustomEvent("game:open-secret"));
+        return;
+      }
       sounds.playQuestionTick();
       const isActive = pill.classList.contains("q-active");
       setQuestionState(pill, !isActive);
@@ -349,7 +307,6 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
   });
 
   function resetQuestions() {
-    clearAutoTimer();
     setQuestionState(pillQ1, false);
     setQuestionState(pillQ2, false);
   }
@@ -363,6 +320,7 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
     const prev = keeperPlayer;
     keeperPlayer = guesserPlayer;
     guesserPlayer = prev;
+    hasSecretChosen = false;
     syncRolesUI();
     resetQuestions();
   }
@@ -383,12 +341,22 @@ import { Dices, RotateCcw, Eye, X, Zap, Flame } from "lucide-astro";
   });
 
   btnMelaJuego.addEventListener("click", () => {
+    if (!hasSecretChosen) {
+      sounds.playSecretAlert();
+      window.dispatchEvent(new CustomEvent("game:open-secret"));
+      return;
+    }
     const activeQuestions = document.querySelectorAll(".q-pill.q-active").length;
     if (activeQuestions <= 1) {
       sounds.playQuestionTick();
       window.dispatchEvent(new CustomEvent("game:open-mela-juego"));
     }
   });
+
+  window.addEventListener("game:secret-changed", ((e: CustomEvent) => {
+    hasSecretChosen = Boolean(e.detail?.character);
+    syncSecretBtnState();
+  }) as EventListener);
 
   window.addEventListener("game:players-updated", ((e: CustomEvent) => {
     if (e.detail?.p1Name) p1Name = e.detail.p1Name;
